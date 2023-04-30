@@ -1,6 +1,6 @@
 {
   "name": "@randajan/pdfkit-dom",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "PDFKit computed rendering with use of elements and styling",
   "repository": "randajan/pdfkit-dom",
   "type": "module",
