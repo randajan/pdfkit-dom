@@ -6,7 +6,7 @@ const { solid } = jet.prop;
 
 
 export const parseSize = setStyleParser("styleSizes", [
-    ["main|current|target", enumFactory(["min", "max"], (v, f)=>v ? v : (Math.max(0, Number.jet.to(f)) || "auto"))],
+    ["main|current|target", enumFactory(["min", "max"], (v, a)=>v ? v : (Math.max(0, Number.jet.to(a[0])) || "auto"))],
     ["min", minZeroNumber],
     ["max", (v, a, r)=>{ 
         if (v == null) { return Infinity; }
@@ -24,8 +24,8 @@ export const parseSide = setStyleParser("styleSide", [
 export const parseFont = setStyleParser("styleFont", [
     ["size", notNullMinZeroNumber],
     ["family", notNullString],
-    ["italic|oblique", enumFactory(["true", "italic", "oblique"], (v, f)=>v ? true : (Number.jet.to(f) || false))],
-    ["underline", enumFactory(["true", "underline"], (v, f)=>v ? true : (f != "" && Boolean.jet.to(f)))]
+    ["italic|oblique", enumFactory(["true", "italic", "oblique"], (v, a)=>v ? true : (Number.jet.to(a[2]) || false))],
+    ["underline", enumFactory(["true", "underline"], (v, a)=>v ? true : (a[3] != "" && Boolean.jet.to(a[3])))]
 ]);
 
 export const parseAlign = setStyleParser("styleAlign", [

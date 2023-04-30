@@ -5,10 +5,11 @@ import { PDFElementGrid } from "./elements/grid";
 import { PDFElementSVG } from "./elements/svg";
 
 export {
+    PDFGenerator,
     PDFElement,
     PDFElementText,
     PDFElementGrid,
     PDFElementSVG
 }
 
-export default PDFGenerator;
+export default options=>new PDFGenerator(options);

@@ -16,6 +16,10 @@ or
 yarn add @randajan/pdfkit-dom
 ```
 
+## Demo
+I hope i will had time to describe this package.
+Meanwhile check demo folder.
+
 ## License
 
 MIT © [randajan](https://github.com/randajan)

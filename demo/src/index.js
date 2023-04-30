@@ -1,11 +1,18 @@
 
 import { info, log } from "@randajan/simple-lib/node";
-import PDFGenerator from "../../dist/index.js";
+
 import fs from "fs";
+import { generateInvoice } from "./invoice.js";
+import { PDFGeneratorItcan } from "./gen.js";
 
 
-const gen = new PDFGenerator({});
+const gen = new PDFGeneratorItcan();
 
-gen.pipe(fs.createWriteStream('file.pdf'));
+
+gen.pipe(fs.createWriteStream('tmp/file.pdf'));
+
+
+gen.render(generateInvoice);
+
 
 

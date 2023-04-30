@@ -43,7 +43,7 @@ export default class PDFElement {
             _p.content.height = this.computeHeight(_p.raw.height, _p.y);
             _p.isComputingHeight = false;
         }
-
+        
         cached.all(this, {}, {
             style:_=>parseStyle(style),
             gaps:_=>computeGaps(this.style),
