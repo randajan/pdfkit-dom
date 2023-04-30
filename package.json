@@ -1,0 +1,47 @@
+{
+  "name": "@randajan/pdfkit-dom",
+  "version": "0.0.0",
+  "description": "PDFKit computed rendering with use of elements and styling",
+  "repository": "randajan/pdfkit-dom",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "start": "set NODE_ENV=dev&& node ./index.js",
+    "build": "set NODE_ENV=prod&& node ./index.js"
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "@randajan/jet-core": "^3.1.6",
+    "pdfkit": "^0.13.0",
+    "svg-to-pdfkit": "^0.1.8"
+  },
+  "devDependencies": {
+    "@randajan/simple-lib": "^2.1.2"
+  },
+  "dependencies": {},
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "pdfkit",
+    "generator",
+    "pdf",
+    "elements",
+    "dom"
+  ],
+  "homepage": "https://github.com/randajan/pdfkit-dom",
+  "bugs": {
+    "url": "https://github.com/randajan/pdfkit-dom/issues"
+  },
+  "author": {
+    "name": "Jan Randa",
+    "email": "jnranda@gmail.com",
+    "url": "https://www.linkedin.com/in/randajan/"
+  }
+}
