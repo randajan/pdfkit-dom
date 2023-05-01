@@ -21,7 +21,8 @@ export class PDFElementSVG extends PDFElement {
     }
 
     constructor(gen, source, style, debugName) {
-
+        source = String.jet.to(source);
+        
         super(gen, source, style, false, debugName);
 
         cached.all(this, {}, {

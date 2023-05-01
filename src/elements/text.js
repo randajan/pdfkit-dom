@@ -4,7 +4,7 @@ import jet from "@randajan/jet-core";
 export class PDFElementText extends PDFElement {
 
     constructor(gen, text, style, debugName) {
-        super(gen, text, style, false, debugName);
+        super(gen, String.jet.to(text), style, false, debugName);
     }
 
     fontPreset(includeHeight=true, includeWidth=true) {
