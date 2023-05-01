@@ -3,7 +3,7 @@ import PDFDocument from "pdfkit";
 
 import jet from "@randajan/jet-core";
 
-import { privateScope, sides } from "../helpers";
+import { vault, sides } from "../helpers";
 
 import { PDFElementText } from "../elements/text";
 import { PDFElementGrid } from "../elements/grid";
@@ -13,11 +13,10 @@ import { parseStyle } from "../methods/styleParser";
 import { drawSheerLine } from "../methods/draw";
 
 const { solid, virtual, cached } = jet.prop;
-const _ps = privateScope();
 
 export default class {
     constructor(options) {
-        const [ _p, uid ] = _ps.set({
+        const [ uid, _p ] = vault.set({
             pageId: 0,
             after: {},
             before: {},
@@ -89,7 +88,7 @@ export default class {
 
         });
 
-        doc.on("end", _ => { jet.run(_p.after.end); _ps.end(uid); });
+        doc.on("end", _ => { jet.run(_p.after.end); vault.end(uid); });
         doc.on("data", _ => { jet.run(_p.after.data); });
 
     }
@@ -100,11 +99,11 @@ export default class {
     }
 
     after(event, callback) {
-        return _ps.get(this.uid).effect(event, callback, true);
+        return vault.get(this.uid).effect(event, callback, true);
     }
 
     before(event, callback) {
-        return _ps.get(this.uid).effect(event, callback, false);
+        return vault.get(this.uid).effect(event, callback, false);
     }
 
     horizontal(x, y, length, style) {
@@ -173,12 +172,12 @@ export default class {
     }
 
     header(renderer) {
-        _ps.get(this.uid).header = renderer;
+        vault.get(this.uid).header = renderer;
         return this;
     }
 
     footer(renderer) {
-        _ps.get(this.uid).footer = renderer;
+        vault.get(this.uid).footer = renderer;
         return this;
     }
 
@@ -199,16 +198,16 @@ export default class {
     }
 
     render(renderer) {
-        const result = renderer(this);
+        const result = jet.isRunnable(renderer) ? renderer(this) : undefined;
 
-        let { header, footer } = _ps.get(this.uid);
+        let { header, footer } = vault.get(this.uid);
 
         this.mapPages((page, id, count)=>{
             if (jet.isRunnable(header)) { this.overflow("top", (margins)=>header(margins, id, count)); }
             if (jet.isRunnable(footer)) { this.overflow("bottom", (margins)=>footer(margins, id, count)); }
         });
 
-        jet.run(_ps.get(this.uid).before.end);
+        jet.run(vault.get(this.uid).before.end);
         this.doc.end();
 
         return result;

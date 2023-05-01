@@ -1,10 +1,9 @@
 import { Allocator } from "./Allocator";
 
 import jet from "@randajan/jet-core";
-import { privateScope } from "../helpers";
+import { vault } from "../helpers";
 
 const { solid, cached, virtual } = jet.prop;
-const _ps = privateScope();
 
 const rawSizeCollector = (current, cell)=>current+cell.rawSize;
 
@@ -12,7 +11,7 @@ export class CompetitiveSizingSchema {
     
     constructor(length, fetchStyle, fetchRawSize) {
 
-        const [_p, uid] = _ps.set({
+        const [uid, _p] = vault.set({
             fetchStyle,
             fetchRawSize,
             sizes:Array(length).fill(0),
@@ -29,7 +28,7 @@ export class CompetitiveSizingSchema {
     }
 
     fetchZones() {
-        const _p = _ps.get(this.uid);
+        const _p = vault.get(this.uid);
 
         const allocator = new Allocator(
             p=>{ p.minimal = []; p.absolute = []; p.relative = []; },
@@ -41,7 +40,7 @@ export class CompetitiveSizingSchema {
             let rawSize = _p.fetchRawSize(index);
 
             for (const follower of _p.followers) {
-                rawSize = Math.max(rawSize, _ps.get(follower.uid).fetchRawSize(index));
+                rawSize = Math.max(rawSize, vault.get(follower.uid).fetchRawSize(index));
             }
 
             const cell = { index, rawSize };
@@ -86,7 +85,7 @@ export class CompetitiveSizingSchema {
     }
 
     resize(freeSpace, recalculateZones=false) {
-        const _p = _ps.get(this.uid);
+        const _p = vault.get(this.uid);
         if (_p.follow) { return _p.follow.resize(freeSpace, recalculateZones); }
         if (recalculateZones || !_p.zones) { _p.zones = this.fetchZones(); }
         _p.sizes = this.fetchSizes(_p.zones, freeSpace);
@@ -94,16 +93,16 @@ export class CompetitiveSizingSchema {
     }
 
     follow(competitiveSchema) {
-        const _p = _ps.get(this.uid);
+        const _p = vault.get(this.uid);
         if (!(competitiveSchema instanceof CompetitiveSizingSchema)) { return this; }
-        if (_p.follow) { _ps.get(_p.follow.uid).delete(this); }
+        if (_p.follow) { vault.get(_p.follow.uid).delete(this); }
         _p.follow = competitiveSchema;
-        _ps.get(competitiveSchema.uid).followers.add(this);
+        vault.get(competitiveSchema.uid).followers.add(this);
         return this;
     }
 
     end() {
-        _ps.end(this.uid);
+        vault.end(this.uid);
     }
 
 }

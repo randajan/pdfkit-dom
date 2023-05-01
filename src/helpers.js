@@ -1,18 +1,7 @@
 import jet from "@randajan/jet-core";
 
-export const privateScope = _=>{
-    const _private = {};
-    let _uid = 1;
-    
-    return {
-        set:data=>{
-            const uid = Symbol("$$"+(_uid++));
-            return [ _private[uid] = data, uid ];
-        },
-        get:uid=>_private[uid],
-        end:uid=>delete _private[uid]
-    }
-}
+
+export const vault = jet.vault();
 
 export const sides = ["top", "left", "right", "bottom"];
 

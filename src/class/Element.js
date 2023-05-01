@@ -1,16 +1,14 @@
 import jet from "@randajan/jet-core";
-import { notNullMinZeroNumber, privateScope } from "../helpers";
+import { notNullMinZeroNumber, vault } from "../helpers";
 import { parseStyle } from "../methods/styleParser";
 import { computeAligns, computeContent, computeGaps } from "../methods/compute";
 
 const { solid, safe, cached, virtual } = jet.prop;
 
-const _ps = privateScope();
-
 export default class PDFElement {
 
     constructor(gen, value, style, allowPaging, debugName) {
-        const [ _p, uid ] = _ps.set({
+        const [ uid, _p ] = vault.set({
             raw:{},
             forced:{},
             content:{},
@@ -109,7 +107,7 @@ export default class PDFElement {
     }
 
     addPage(childrens, height) {
-        const _p = _ps.get(this.uid);
+        const _p = vault.get(this.uid);
         if (!_p.isComputingHeight) { throw Error("PDFElement.addPage(childrens) could be executed only in the scope of .computeHeight() function"); }
         _p.pages.push(childrens = solid([...childrens], "height", height));
         return childrens;
@@ -192,7 +190,7 @@ export default class PDFElement {
     }
 
     set(options={}) {
-        const _p = _ps.get(this.uid);
+        const _p = vault.get(this.uid);
 
         let {x, y, width, height} = options;
 
@@ -216,7 +214,7 @@ export default class PDFElement {
     }
 
     end() {
-        _ps.end(this.uid);
+        vault.end(this.uid);
     }
     
 }

@@ -14,5 +14,3 @@ gen.pipe(fs.createWriteStream('tmp/file.pdf'));
 
 gen.render(generateInvoice);
 
-
-
