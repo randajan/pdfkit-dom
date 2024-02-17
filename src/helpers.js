@@ -13,3 +13,11 @@ export const minZeroNumber = (src)=>Math.max(Number.jet.to(src), 0);
 
 
 export const enumFactory = (enums, after)=>jet.enumFactory(enums, { before:src=>String.jet.to(src).jet.simplify(), after });
+
+export const flatArray = (srcArr, dstArr=[])=>{
+    if (!Array.isArray(srcArr)) { dstArr.push(srcArr); }
+    else {
+        for (const item of srcArr) { flatArray(item, dstArr); }
+    }
+    return dstArr;
+}

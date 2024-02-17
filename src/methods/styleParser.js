@@ -82,7 +82,9 @@ export const parseBorders = (blob)=>{
 
 const $style = Symbol("style");
 export const parseStyle = (blob={})=>{
-    if (blob && blob.$$kind === $style) { return blob; }
+    blob = blob || {};
+
+    if (blob.$$kind === $style) { return blob; }
 
     const {
         width, height, grid,

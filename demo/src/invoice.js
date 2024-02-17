@@ -26,12 +26,13 @@ export const generateInvoice = async gen => {
   };
 
   const rows = [];
-  for (let i = 1; i <= 15; i++) {
+  for (let i = 1; i <= 2; i++) {
     const row = [];
-    for (let j = 1; j <= 4; j++) {
-      row.push(gen.text(`${i}:${j} ${lorem.generateWords(Math.round(Number.jet.rnd(5, 11+(j*10)-(i/10))))}`.trim() + " END!!!", {
+    for (let j = 1; j <= 2; j++) {
+      row.push(gen.text(`${i}:${j} ${lorem.generateWords(Math.round(Number.jet.rnd(5, 2+(j*2)-(i/2))))}`.trim() + " END!!!", {
         font:8,
-        align: "left bottom",
+        align: "right bottom",
+        width: "min"
       }));
     }
     rows.push(row);
@@ -44,23 +45,24 @@ export const generateInvoice = async gen => {
   const contacts = gen.contacts("Subject1", "Subject2", org, partner).render();
 
   gen.grid(rows, {
-    width: "max",
+    margin:{
+      top:20,
+      left:200
+    },
+    width: 300,
     height: "min",
     border: {
       horizontal:"1 gray",
       row:"1 lightgray 1",
       column:"1 #F4F4F4 1"
     },
-    margin:"20 0 0 0",
     padding:1,
     grid:"1 2",
-    paging:true
+    paging:true,
   }, {
     header:gen.grid([[
       gen.text("První sloupec", { align:"center", font:"10 bold" }),
       gen.text("Sloupec A", { align:"center", font:"10 bold" }),
-      gen.text("Prostě sloupec", { align:"center", font:"10 bold" }),
-      gen.text("Poslední sloupec", { align:"center", font:"10 bold" })
     ]]),
     footer:gen.text("seznam pokračuje na další straně", {align:"right", font:"7 regular italic", color:"#999"}),
   }).set({y:contacts.height}).render();

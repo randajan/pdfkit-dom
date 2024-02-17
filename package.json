@@ -15,16 +15,18 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "@randajan/jet-core": "^3.1.6",
-    "pdfkit": "^0.13.0",
+    "@randajan/jet-core": "^3.2.19",
+    "pdfkit": "^0.14.0",
     "svg-to-pdfkit": "^0.1.8"
   },
   "devDependencies": {
-    "@randajan/simple-lib": "^2.1.2",
+    "@randajan/simple-lib": "^2.2.0",
     "fs-extra": "^11.1.1",
     "lorem-ipsum": "^2.0.8"
   },
-  "dependencies": {},
+  "dependencies": {
+    "esbuild-plugin-import-glob": "^0.1.1"
+  },
   "files": [
     "dist",
     "README.md",

@@ -3,6 +3,7 @@ import fse from "fs-extra";
 import { PDFGenerator } from "../../dist/index.js";
 import jet from "@randajan/jet-core";
 
+
 const { cached } = jet.prop;
 
 const logoPath = "demo/static/img/logoItcan_plainColor.svg";

@@ -15,7 +15,7 @@ export class PDFElementGrid extends PDFElement {
 
         cached.all(this, {}, {
             footer:_=>footer instanceof PDFElement ? footer : gen.text(this.style.ellipsis || "", jet.merge({align:"right"}, footer)),
-            header:_=>header instanceof PDFElement ? header : gen.text(String.jet.to(header)),
+            header:_=>header instanceof PDFElement ? header : gen.text(header),
             widthSchema:_=>createCompetitiveSchema(
                 rows[0].length, //column count
                 index=>rows[0][index].style.width, //get column style
