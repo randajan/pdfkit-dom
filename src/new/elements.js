@@ -2,8 +2,10 @@ import jet from "@randajan/jet-core";
 
 const _elements = {};
 const _defs = {
-    "getWidth":{ type:"function", isRequired:true },
-    "getHeight":{ type:"function", isRequired:true },
+    "measureWidth":{ type:"function", isRequired:true },
+    "measureHeight":{ type:"function", isRequired:true },
+    "boundWidth":{ type:"function", isRequired:true, output:"number"},
+    "boundHeight":{ type:"function", isRequired:true, output:"number"},
     "render":{ type:"function", isRequired:true },
 };
 const _defsList = Object.keys(_defs);
@@ -20,6 +22,11 @@ const msgDef = (tagName, text, list)=>{
     return msg(tagName, text ? "define failed - " + text : "", list);
 }
 
+const validateOutput = (tagName, outputType, output)=>{
+    if (typeof output === outputType) { return output; }
+    throw Error(msg(tagName, "expected output type is " + outputType + "\n got " + output));
+}
+
 export const elementDefine = (tagName, definition={})=>{
     tagName = String.jet.to(tagName);
     if (!tagName) { throw Error(msgDef(null, "tagName is missing")); }
@@ -34,8 +41,9 @@ export const elementDefine = (tagName, definition={})=>{
     if (missing.length) { throw Error(msgDef(tagName, "missing required", missing)); }
 
     const mistype = _defsList.reduce((r, d)=>{
-        const { type } = _defs[d];
+        const { type, output } = _defs[d], prop = definition[d];
         if (typeof definition[d] !== type) { r.push(`${d} expect ${type}`); }
+        if (type === "function" && output) { definition[d] = async (...a)=>validateOutput(tagName, output, await prop(...a));}
         return r;
     }, []);
 

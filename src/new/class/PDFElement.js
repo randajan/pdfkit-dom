@@ -2,10 +2,9 @@ import jet from "@randajan/jet-core";
 import { flatArray } from "../../helpers";
 import { elementPick } from "../elements";
 import { parseStyle } from "../../methods/styleParser";
+import { computeGaps } from "../../methods/compute";
 
 const { solid, virtual } = jet.prop;
-
-
 
 export class PDFElement {
 
@@ -28,6 +27,8 @@ export class PDFElement {
 
         solid(this, "tagName", tagName );
         virtual(this, "props", _=>({...props}));
+        solid(this, "gaps", computeGaps(props));
         solid.all(this, elementPick(tagName));
+
     }
 }

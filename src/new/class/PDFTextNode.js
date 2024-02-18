@@ -43,14 +43,34 @@ export class PDFTextNode {
 
     }
 
-    async getWidth() {
+    async measureWidth(widthLimit) {
         const { kit, current } = vault.get(this.gen.uid);
         return kit.widthOfString(this.content, createOptions(current[0].style));
     }
 
-    async getHeight(widthLimit) {
+    async measureHeight(widthLimit, heightLimit) {
         const { kit, current } = vault.get(this.gen.uid);
         return kit.heightOfString(this.content, createOptions(current[0].style, widthLimit));
+    }
+
+    async boundWidth(widthLimit) {
+        return this.measureWidth(widthLimit);
+    }
+
+    async boundHeight(widthLimit, heightLimit) {
+        return this.measureHeight(widthLimit, heightLimit)
+    }
+
+    async setWidth(widthLimit) {
+        const width = Number.jet.frame(await this.boundWidth(widthLimit), 0, widthLimit);
+        solid(this, "width", width);
+        return width;
+    }
+
+    async setHeight(heightLimit) {
+        const height = Number.jet.frame(await this.boundHeight(this.width, heightLimit), 0, heightLimit);
+        solid(this, "height", height);
+        return height;
     }
 
     async render(x, y, width, height) {

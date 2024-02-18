@@ -90,9 +90,11 @@ export class PDF {
 
         const { width, height, margin:{ left, top } } = this.page;
 
-        const frame = PDFNode.create(this, children);
-        await this.withStyle(_p.options.style, _=>{
-            return frame.render(left, top, width, height);
+        const node = PDFNode.create(this, children);
+        await this.withStyle(_p.options.style, async _=>{
+            await node.setWidth(width);
+            await node.setHeight(height);
+            return node.render(left, top);
         });
 
         new Promise((res, rej)=>{
