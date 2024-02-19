@@ -2,14 +2,14 @@ import jet from "@randajan/jet-core";
 import { PDFElement } from "./PDFElement";
 import { flatArray, minZeroNumber, vault } from "../../helpers";
 
-const { solid, virtual } = jet.prop;
+const { solid, virtual, cached } = jet.prop;
 
 
-const createOptions = (style, width, height)=>{
+const createOptions = (props, width, height)=>{
     let opt;
 
-    if (!style) { opt = {} } else {
-        const { align, font, spacing, link, lineBreak, ellipsis, columns } = style;
+    if (!props) { opt = {} } else {
+        const { align, font, spacing, link, lineBreak, ellipsis, columns } = props;
 
         opt = {
             align:align.horizontal, baseline:align.baseline,
@@ -22,69 +22,71 @@ const createOptions = (style, width, height)=>{
     if (width != null) { opt.width = minZeroNumber(width); }
     if (height != null) { opt.height = minZeroNumber(height); }
 
-    //if (style && opt.width != null && opt.height != null) { opt.width -= gaps.column*(columns-1); }
+    //if (props && opt.width != null && opt.height != null) { opt.width -= gaps.column*(columns-1); }
 
     return opt;
 }
 
 export class PDFTextNode {
 
-    static create(gen, content, parent) {
-        return new PDFTextNode(gen, content, parent);
+    static create(gen, element, parent) {
+        return new PDFTextNode(gen, element, parent);
     }
 
-    constructor(gen, content, parent) {
+    constructor(gen, element, parent) {
 
         solid.all(this, {
             gen,
-            content,
             parent,
+        }, false);
+
+        solid.all(this, {
+            element
         });
 
     }
 
-    async measureWidth(widthLimit) {
+    _setWidthRaw(widthRaw) { solid(this, "widthRaw", minZeroNumber(widthRaw)); }
+    _setWidthLimit(widthLimit) { solid(this, "widthLimit", minZeroNumber(widthLimit)); }
+    _setWidth(width) { solid(this, "width", Number.jet.frame(width, 0, this.widthLimit)); }
+    _setHeightRaw(heightRaw) { solid(this, "heightRaw", minZeroNumber(heightRaw)); }
+    _setHeightLimit(heightLimit) { solid(this, "heightLimit", minZeroNumber(heightLimit)); }
+    _setHeight(height) { solid(this, "height", Number.jet.frame(height, 0, this.heightLimit)); }
+
+    //STEP 1
+    async setWidthRaw() {
         const { kit, current } = vault.get(this.gen.uid);
-        return kit.widthOfString(this.content, createOptions(current[0].style));
+        this._setWidthRaw(kit.widthOfString(this.element, createOptions(current[0].props)))
+        return this.widthRaw;
     }
 
-    async measureHeight(widthLimit, heightLimit) {
-        const { kit, current } = vault.get(this.gen.uid);
-        return kit.heightOfString(this.content, createOptions(current[0].style, widthLimit));
-    }
-
-    async boundWidth(widthLimit) {
-        return this.measureWidth(widthLimit);
-    }
-
-    async boundHeight(widthLimit, heightLimit) {
-        return this.measureHeight(widthLimit, heightLimit)
-    }
-
+    //STEP 2
     async setWidth(widthLimit) {
-        const width = Number.jet.frame(await this.boundWidth(widthLimit), 0, widthLimit);
-        solid(this, "width", width);
-        return width;
+        this._setWidthLimit(widthLimit);
+        this._setWidth(this.widthRaw);
+        return this.width;
     }
 
-    async setHeight(heightLimit) {
-        const height = Number.jet.frame(await this.boundHeight(this.width, heightLimit), 0, heightLimit);
-        solid(this, "height", height);
-        return height;
-    }
-
-    async render(x, y, width, height) {
+    //STEP 2
+    async setHeightRaw() {
         const { kit, current } = vault.get(this.gen.uid);
-        const { gen, content } = this;
+        this._setHeightRaw(kit.heightOfString(this.element, createOptions(current[0].props, this.widthLimit)));
+        return this.heightRaw;
+    }
 
-        kit.text(content, x, y, createOptions(current[0].style, width, height));
+    //STEP 4
+    async setHeight(heightLimit) {
+        this._setHeightLimit(heightLimit);
+        this._setHeight(this.heightRaw);
+        return this.height;
+    }
 
-        //const { children } = content.props;
-
-        // await Promise.all(children.map(child=>{
-        //     if (PDFElement.is(child)) { return PDFFrame.render(doc, child, parent); }
-        //     return child;
-        // }));
+    //STEP 5
+    async render(x, y) {
+        const { kit, current } = vault.get(this.gen.uid);
+        const { gen, element } = this;
+        
+        kit.text(element, x, y, createOptions(current[0].props, this.width, this.height));
 
     }
 }

@@ -1,13 +1,8 @@
-import { parseStyle } from "../../methods/styleParser";
+import { parseProps } from "../parser/parseProps";
 import { drawHorizontal, drawVertical } from "./drawLine";
 
-export const drawBorders = (kit, x, y, width, height, style)=>{
-    const { margin, border, color } = parseStyle(style);
-
-    x += margin.left;
-    y += margin.right;
-    width -= (margin.left + margin.right);
-    height -= (margin.top + margin.bottom);
+export const drawBorders = (kit, x, y, width, height, props)=>{
+    const { margin, border, color } = parseProps(props);
 
     const fill = color.background;
     if (fill && fill !== "transparent") {

@@ -9,10 +9,7 @@ import { newContent } from "./new.jsx";
 
 
 
-const doc = PDF.create({ style:{
-    font:"15 Helvetica",
-    color:"#FF0000"
-} });
+const doc = PDF.create();
 
 doc.render(newContent, fs.createWriteStream('tmp/file.pdf'));
 

@@ -4,7 +4,7 @@ import PDFKit from "pdfkit";
 import { minZeroNumber, vault } from "../../helpers";
 
 import { PDFElement } from "./PDFElement";
-import { parseStyle } from "../../methods/styleParser";
+import { parseProps } from "../parser/parseProps";
 import { PDFNode } from "./PDFNode";
 import { elementDefine } from "../elements";
 
@@ -26,7 +26,13 @@ export class PDF {
         options = {
             size: 'A4',
             ...options,
-            bufferPages: true
+            bufferPages: true,
+            margins:{
+                left:0,
+                right:0,
+                top:0,
+                bottom:0
+            }
         };
 
         const kit = new PDFKit(options);
@@ -57,17 +63,17 @@ export class PDF {
         return "PDF " + text;
     }
 
-    async withStyle(style, callback) {
+    async withProps(props, callback) {
         const { kit, current } = vault.get(this.uid);
 
-        const s = style = parseStyle(style);
+        const s = props = parseProps(props);
         let c = { ...current[0].inherit };
 
         if (s.font.size) { c.fontSize = s.font.size; }
         if (s.font.family) { c.fontFamily = s.font.family; }
         if (s.color.foreground) { c.fillColor = s.color.foreground; }
 
-        current.unshift({style, inherit:c});
+        current.unshift({props, inherit:c});
         
         kit.font(c.fontFamily, c.fontSize).fillColor(c.fillColor);
         const result = await callback(this);
@@ -91,11 +97,11 @@ export class PDF {
         const { width, height, margin:{ left, top } } = this.page;
 
         const node = PDFNode.create(this, children);
-        await this.withStyle(_p.options.style, async _=>{
-            await node.setWidth(width);
-            await node.setHeight(height);
-            return node.render(left, top);
-        });
+        await node.setWidthRaw();
+        await node.setWidth(width);
+        await node.setHeightRaw();
+        await node.setHeight(height);
+        await node.render(left, top);
 
         new Promise((res, rej)=>{
             _p.kit.on("end", _=>{

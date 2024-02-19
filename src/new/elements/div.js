@@ -2,27 +2,51 @@ import { elementDefine } from "../elements";
 
 
 
-// elementDefine("div", {
-//     measureWidth:node=>{
-//         return node.reduce(async (w, c)=>w + await c.measureWidth(), 0);
-//     },
-//     measureHeight:node=>{
-//         return node.reduce(async (w, c)=>w + await c.measureHeight(widthMax), 0);
-//     },
-//     bound:async (node, widthLimit, heightLimit)=>{
-//         await node.forEach(async c=>{
-//             const height = await c.measureHeight(widthLimit, heightLimit);
-//             await c.bound(widthLimit, height);
-//         });
-//         return {
-//             width:widthLimit,
-//             height:heightLimit
-//         }
-//     },
-//     render:(node, x, y)=>{
-//         return node.forEach(async c=>{
-//             await c.render(x, y);
-//             y = y+c.height;
-//         });
-//     }
-// });
+elementDefine("div", {
+    setWidthRaw:(node)=>{
+        return node.reduce(async (w, c)=>Math.max(w, await c.setWidthRaw()), 0);
+    },
+    setWidth:(node)=>{
+        return node.reduce(async (w, c)=>Math.max(w, await c.setWidth(node.widthContentLimit)), 0);
+    },
+    setHeightRaw:node=>{
+        return node.reduce(async (h, c)=>h + await c.setHeightRaw(), 0);
+    },
+    setHeight:node=>{
+        return node.reduce(async (h, c)=>h + await c.setHeight(node.heightContentLimit), 0);
+    },
+    // boundWidth:async (node, widthLimit)=>{
+    //     const s = node.element.props;
+
+    //     let width;
+    //     if (typeof s.width.main === "number") { width = s.width; }
+    //     else if (s.width.main === "max") { width = widthLimit; }
+    //     else { width = node.widthRaw; }
+
+    //     width = Math.min(widthLimit, Number.jet.frame(width, s.width.min, s.width.max));
+
+    //     await node.forEach(c=>c.setWidth(width));
+
+    //     return width;
+    // },
+    // boundHeight:async (node, widthLimit, heightLimit)=>{
+    //     const s = node.element.props;
+
+    //     let height;
+    //     if (typeof s.height.main === "number") { height = s.height; }
+    //     else if (s.height.main === "max") { height = heightLimit; }
+    //     else { height = node.heightRaw; }
+
+    //     height = Math.min(heightLimit, Number.jet.frame(height, s.height.min, s.height.max));
+
+    //     await node.forEach(c=>c.setHeight(height));
+
+    //     return height;
+    // },
+    render:(node, x, y)=>{
+        return node.forEach(async c=>{
+            await c.render(x, y);
+            y = y+c.height;
+        });
+    }
+});

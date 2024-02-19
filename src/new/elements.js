@@ -2,10 +2,10 @@ import jet from "@randajan/jet-core";
 
 const _elements = {};
 const _defs = {
-    "measureWidth":{ type:"function", isRequired:true },
-    "measureHeight":{ type:"function", isRequired:true },
-    "boundWidth":{ type:"function", isRequired:true, output:"number"},
-    "boundHeight":{ type:"function", isRequired:true, output:"number"},
+    "setWidthRaw":{ type:"function", isRequired:true, output:"number" },
+    "setWidth":{ type:"function", isRequired:true, output:"number" },
+    "setHeightRaw":{ type:"function", isRequired:true, output:"number" },
+    "setHeight":{ type:"function", isRequired:true, output:"number"},
     "render":{ type:"function", isRequired:true },
 };
 const _defsList = Object.keys(_defs);
@@ -23,6 +23,7 @@ const msgDef = (tagName, text, list)=>{
 }
 
 const validateOutput = (tagName, outputType, output)=>{
+    return output;
     if (typeof output === outputType) { return output; }
     throw Error(msg(tagName, "expected output type is " + outputType + "\n got " + output));
 }

@@ -8,17 +8,17 @@ const { solid, virtual, cached } = jet.prop;
 
 export class PDFNode extends PDFTextNode {
 
-    static create(gen, content, parent) {
-        if (PDFElement.is(content)) { return new PDFNode(gen, content, parent); }
-        return new PDFTextNode(gen, content, parent);
+    static create(gen, element, parent) {
+        if (PDFElement.is(element)) { return new PDFNode(gen, element, parent); }
+        return new PDFTextNode(gen, element, parent);
     }
 
-    constructor(gen, content, parent) {
-        super(gen, content, parent);
+    constructor(gen, element, parent) {
+        super(gen, element, parent);
 
         const children = [];
 
-        for (const child of content.props.children) {
+        for (const child of element.props.children) {
             children.push(PDFNode.create(gen, child, this));
         }
 
@@ -38,48 +38,64 @@ export class PDFNode extends PDFTextNode {
         });
     }
 
-    async measureWidth(...args) {
-        const { gen, content } = this;
-        return gen.withStyle(content.props, async _=>{
-            return content.gaps.width + await content.measureWidth(this, ...args);
-        });
+    //STEP 1
+    async setWidthRaw() {
+        const { gen, element } = this;
+        this._setWidthRaw(await gen.withProps(element.props, async _=>{
+            return element.gaps.width + await element.setWidthRaw(this);
+        }));
+        return this.widthRaw;
     }
 
-    async measureHeight(...args) {
-        const { gen, content } = this;
-        return gen.withStyle(content.props, async _=>{
-            return content.gaps.height + await content.measureHeight(this, ...args);
-        });
+    //STEP 2
+    async setWidth(widthLimit) {
+        const { gen, element } = this;
+        this._setWidthLimit(widthLimit);
+        solid(this, "widthContentLimit", minZeroNumber(this.widthLimit-element.gaps.width));
+
+        this._setWidth(await gen.withProps(element.props, async _=>{
+            return element.gaps.width + await element.setWidth(this);
+        }));
+        solid(this, "widthContent", minZeroNumber(this.width-element.gaps.width));
+
+        return this.width;
     }
 
-    async boundWidth(widthLimit) {
-        const { gen, content } = this;
-        const { gaps, props } = content;
-
-        return gen.withStyle(props, async _=>{
-            return gaps.width + await content.boundWidth(this, widthLimit-gaps.width);
-        });
+    //STEP 3
+    async setHeightRaw() {
+        const { gen, element } = this;
+        this._setHeightRaw(await gen.withProps(element.props, async _=>{
+            return element.gaps.height + await element.setHeightRaw(this);
+        }));
+        return this.heightRaw;
     }
 
-    async boundHeight(widthLimit, heightLimit) {
-        const { gen, content } = this;
-        const { gaps, props } = content;
+    //STEP 4
+    async setHeight(heightLimit) {
+        const { gen, element } = this;
+        this._setHeightLimit(heightLimit);
+        solid(this, "heightContentLimit", minZeroNumber(this.heightLimit-element.gaps.height));
 
-        return gen.withStyle(props, async _=>{
-            return gaps.height + await content.boundHeight(this, widthLimit-gaps.width, heightLimit-gaps.height);
-        });
+        this._setHeight(await gen.withProps(element.props, async _=>{
+            return element.gaps.height + await element.setHeight(this);
+        }));
+        solid(this, "heightContent", minZeroNumber(this.height-element.gaps.height));
+
+        return this.height;
     }
 
+    //STEP 5
     async render(x, y) {
-        const { gen, content, width, height } = this;
-        const { gaps, props } = content;
+        const { gen, element, width, height } = this;
+        const { gaps, props } = element;
         const { kit } = vault.get(gen.uid);
 
-        drawBorders(kit, x, y, width, height, props);
+        x += gaps.left;
+        y += gaps.top;
 
-        await gen.withStyle(props, _=>{
-            return content.render(this, x+gaps.left, y+gaps.top, width-gaps.width, height-gaps.height);
-        });
+        drawBorders(kit, x, y, this.widthContent, this.heightContent, props);
+
+        await gen.withProps(props, _=>element.render(this, x, y));
 
     }
 }
