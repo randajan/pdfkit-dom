@@ -20,7 +20,7 @@ const createOptions = (props, width, height)=>{
     }
 
     if (width != null) { opt.width = minZeroNumber(width); }
-    if (height != null) { opt.height = minZeroNumber(height); }
+    if (height != null) { opt.height = minZeroNumber(height)+5; }
 
     //if (props && opt.width != null && opt.height != null) { opt.width -= gaps.column*(columns-1); }
 

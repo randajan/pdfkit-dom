@@ -21,7 +21,7 @@ const drawLine = (isVertical, kit, x, y, length, propBorder)=>{
 
     kit.stroke(border.color);
     kit.undash();
-    return kit;
+    
 }
 
 export const drawHorizontal = (kit, x, y, length, propBorder)=>{
