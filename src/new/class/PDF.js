@@ -4,9 +4,9 @@ import PDFKit from "pdfkit";
 import { minZeroNumber, vault } from "../../helpers";
 
 import { PDFElement } from "./PDFElement";
-import { parseProps } from "../parser/parseProps";
+import { parseProps } from "../parser/parsers";
 import { PDFNode } from "./PDFNode";
-import { elementDefine } from "../elements";
+import { elementDefine } from "../elements/elements";
 
 const { solid, virtual, safe } = jet.prop;
 
@@ -50,9 +50,8 @@ export class PDF {
         solid.all(this, {
             uid,
             page:virtual.all({}, {
-                width:_=>minZeroNumber(kit.page.width-kit.page.margins.right-kit.page.margins.left),
-                height:_=>minZeroNumber(kit.page.height-kit.page.margins.top-kit.page.margins.bottom),
-                margin:_=>({...kit.page.margins})
+                width:_=>minZeroNumber(kit.page.width),
+                height:_=>minZeroNumber(kit.page.height),
             })
         }, false);
 
@@ -94,14 +93,14 @@ export class PDF {
 
         if (pipeDestination) { _p.kit.pipe(pipeDestination, pipeOptions); }
 
-        const { width, height, margin:{ left, top } } = this.page;
+        const { width, height } = this.page;
 
         const node = PDFNode.create(this, children);
         await node.setWidthRaw();
         await node.setWidth(width);
         await node.setHeightRaw();
         await node.setHeight(height);
-        await node.render(left, top);
+        await node.render(0, 0);
 
         new Promise((res, rej)=>{
             _p.kit.on("end", _=>{

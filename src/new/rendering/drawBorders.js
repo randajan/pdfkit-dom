@@ -1,4 +1,4 @@
-import { parseBorders } from "../parser/parseProps";
+import { parseBorders } from "../parser/parsers";
 import { drawHorizontal, drawVertical } from "./drawLine";
 
 export const drawBorders = (kit, x, y, width, height, propBorders)=>{

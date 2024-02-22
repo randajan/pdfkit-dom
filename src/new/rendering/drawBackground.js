@@ -1,4 +1,4 @@
-import { parseColor } from "../parser/parseProps";
+import { parseColor } from "../parser/parsers";
 
 export const drawBackground = (kit, x, y, width, height, propColor)=>{
     const { background } = parseColor(propColor);

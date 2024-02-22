@@ -1,4 +1,4 @@
-import { parseBorder } from "../parser/parseProps";
+import { parseBorder } from "../parser/parsers";
 
 const drawLine = (isVertical, kit, x, y, length, propBorder)=>{
     const border = parseBorder(propBorder);

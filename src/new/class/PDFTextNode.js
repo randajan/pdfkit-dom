@@ -4,6 +4,11 @@ import { flatArray, minZeroNumber, vault } from "../../helpers";
 
 const { solid, virtual, cached } = jet.prop;
 
+//PDFKIT bug. measured text box is not equal to rendered box, those numbers are there to clean this mess
+const _minSize = {
+    height:5, //rendered box is without this sometime too small and the last row disapear
+    width:1 //rendered box is without this sometime too small and it will create another row
+}
 
 const createOptions = (props, width, height)=>{
     let opt;
@@ -19,8 +24,8 @@ const createOptions = (props, width, height)=>{
         }
     }
 
-    if (width != null) { opt.width = minZeroNumber(width); }
-    if (height != null) { opt.height = minZeroNumber(height)+5; }
+    if (width != null) { opt.width = _minSize.width+minZeroNumber(width); }
+    if (height != null) { opt.height = _minSize.height+minZeroNumber(height); }
 
     //if (props && opt.width != null && opt.height != null) { opt.width -= gaps.column*(columns-1); }
 
@@ -70,7 +75,7 @@ export class PDFTextNode {
     //STEP 2
     async setHeightRaw() {
         const { kit, current } = vault.get(this.gen.uid);
-        this._setHeightRaw(kit.heightOfString(this.element, createOptions(current[0].props, this.widthLimit)));
+        this._setHeightRaw(kit.heightOfString(this.element, createOptions(current[0].props, this.width)));
         return this.heightRaw;
     }
 

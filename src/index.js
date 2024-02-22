@@ -4,8 +4,8 @@ import { PDFElementText } from "./elements/text";
 import { PDFElementGrid } from "./elements/grid";
 import { PDFElementSVG } from "./elements/svg";
 import { PDF } from "./new/class/PDF.js";
-import "./new/elements/*";
 
+import "./new/elements/loadDefault.js";
 
 
 export {
