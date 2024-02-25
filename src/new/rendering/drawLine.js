@@ -1,9 +1,9 @@
 import { parseBorder } from "../parser/parsers";
 
-const drawLine = (isVertical, kit, x, y, length, propBorder)=>{
+export const drawLine = (isVertical, kit, x, y, length, propBorder)=>{
     const border = parseBorder(propBorder);
     
-    if (!border.weight) { return kit; }
+    if (!border.weight || border.color === "transparent") { return kit; }
 
     kit.moveTo(x, y)
         .lineTo(isVertical ? x : x+length, isVertical ? y+length : y)

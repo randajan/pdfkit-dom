@@ -6,6 +6,7 @@ import { drawBorders } from "../rendering/drawBorders";
 import { drawBackground } from "../rendering/drawBackground";
 import { parseBorders } from "../parser/parsers";
 import { drawHorizontal, drawVertical } from "../rendering/drawLine";
+import { drawHorizontals, drawVerticals } from "../rendering/drawLines";
 
 const { solid, virtual, cached } = jet.prop;
 
@@ -161,21 +162,8 @@ export class PDFNode extends PDFTextNode {
         moveBoundBy(b, border)
         drawBackground(kit, b.x, b.y, b.width, b.height, color);
 
-        if (rows) {
-            let y = b.y + padding.top;
-            for (let i=1; i<rows.length; i++) {
-                y += rows[i-1] + element.gaps.row;
-                drawHorizontal(kit, b.x, y-element.gaps.row/2, b.width, border.row);
-            }
-        }
-
-        if (columns) {
-            let x = b.x + padding.left;
-            for (let i=1; i<columns.length; i++) {
-                x += columns[i-1] + element.gaps.column;
-                drawVertical(kit, x-element.gaps.column/2, b.y, b.height, border.column);
-            }
-        }
+        drawHorizontals(kit, b.x, b.y+padding.top, b.width, element.gaps.row, rows, border.row);
+        drawVerticals(kit, b.x+padding.left, b.y, b.height, element.gaps.column, columns, border.column);
 
         moveBoundBy(b, padding);
         await gen.withProps(element.props, _=>element.render(this, b.x, b.y, b.width, b.height));

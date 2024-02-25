@@ -1,5 +1,5 @@
 import { sum, vault } from "../../../helpers";
-import { getSizing } from "../../sizing/Competitive";
+import { getSizing } from "../../sizing/getSizing";
 import { computeGaps as cg } from "../../../methods/compute";
 import { PDFNode } from "../../class/PDFNode";
 
@@ -13,8 +13,7 @@ const getCdr = (node, childIndex)=>[ getRid(node, childIndex), getCid(node, chil
 
 
 export const defaultProps = {
-    border:"1 black",
-    width:"min"
+    border:"1 black"
 };
 
 
@@ -42,14 +41,14 @@ export const setWidthRaw = async (node)=>{
 };
 
 export const setWidthContent = async (node)=>{
-    const { rows, columns } = node.element.props;
+    const { width, rows, columns } = node.element.props;
 
-    const sizing = getSizing(node.widthContentLimit, columns, cid=>{
-        return rows.reduce((v, r, rid)=>v + getChild(node, rid, cid).widthRaw, 0);
+    const sizing = getSizing(node.widthContentLimit, width, columns, cid=>{
+        return rows.reduce((v, r, rid)=>Math.max(v, getChild(node, rid, cid).widthRaw), 0);
     });
 
     await node.forEach(async (child, index)=>{
-        const [rid, cid] = getCdr(node, index);
+        const cid = getCid(node, index);
         await child.setWidth(sizing[cid]);
     });
 
@@ -70,44 +69,40 @@ export const setHeightRaw = async node=>{
 };
 
 export const setHeightContent = async node=>{
+    const { height, rows, columns } = node.element.props;
+
     const total = [];
+
+    const sizing = getSizing(node.heightContentLimit, height, rows, rid=>{
+        return columns.reduce((v, r, cid)=>Math.max(v, getChild(node, rid, cid).heightRaw), 0);
+    });
 
     await node.forEach(async (child, index)=>{
         const rid = getRid(node, index);
-        total[rid] = Math.max(total[rid] || 0, await child.setHeight(node.heightContentLimit));
+        await child.setHeight(sizing[rid]);
     });
 
-    node.rows = total;
+    node.rows = sizing;
 
-    return sum(...total);
+    return sum(...sizing);
 };
 
 export const render = (node, x, y)=>{
-    const { gaps, props:{ border } } = node.element;
-    // if (width < widthLimit) {
-    //     if (align.horizontal === "center") { x += (widthLimit - width) / 2; }
-    //     else if (align.horizontal === "right") { x += widthLimit - width; }
-    // }
-
-    // if (height < heightLimit) {
-    //     if (align.vertical === "middle") { y += (heightLimit - height) / 2; }
-    //     else if (align.vertical === "bottom") { y += heightLimit - height; }
-    // }
-
+    const { columns, rows, element:{ gaps, aligns } } = node;
     const gx = x;
 
     return node.forEach(async (c, index)=>{
         const [rid, cid] = getCdr(node, index);
 
         if (cid !== 0) {
-            x += node.columns[cid-1] + gaps.column;
+            x += columns[cid-1] + gaps.column;
         }
         else if (rid !== 0) {
-            y += node.rows[rid-1] + gaps.row;
+            y += rows[rid-1] + gaps.row;
             x = gx;
         }
-
-        await c.render(x, y);
+        
+        await c.render(x + aligns.horizontal*(columns[cid] - c.width), y + aligns.vertical*(rows[rid] - c.height));
         
     });
 }

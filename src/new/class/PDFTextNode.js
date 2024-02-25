@@ -2,7 +2,7 @@ import jet from "@randajan/jet-core";
 import { PDFElement } from "./PDFElement";
 import { flatArray, minZeroNumber, vault } from "../../helpers";
 
-const { solid, virtual, cached } = jet.prop;
+const { solid, virtual, cached, safe } = jet.prop;
 
 //PDFKIT bug. measured text box is not equal to rendered box, those numbers are there to clean this mess
 const _minSize = {
@@ -31,6 +31,9 @@ const createOptions = (props, width, height)=>{
 
     return opt;
 }
+
+const setFactory = cb=>({set:(t, f)=>f != null ? f : cb(t)});
+
 
 export class PDFTextNode {
 

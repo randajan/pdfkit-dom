@@ -7,7 +7,8 @@ const _zones = ["min", "set", "req", "ext"];
 
 const rawSizeCollector = (current, cell)=>current+cell.sizeRaw;
 
-const allocate = (sizes, getRawSize)=>{
+const allocate = (size, sizes, getRawSize)=>{
+    size  = parseSize(size);
     sizes = parseSizes(sizes);
 
     const allocator = new Allocator(_zones); 
@@ -26,7 +27,7 @@ const allocate = (sizes, getRawSize)=>{
         allocator.add(min, set, "set", cell);
         allocator.add(set, req, "req", cell);
 
-        if (req <= max) { allocator.add(req, max, "ext", cell); }
+        if (size.main !== "min" && req <= max) { allocator.add(req, max, "ext", cell); }
     }
 
     return allocator;
@@ -65,11 +66,10 @@ const fetchSizes = (limit, zones)=>{
             limit -= val;
         }
     }
-
+    
     return sizes;
 }
 
-export const getSizing = (limit, propSizes, getRawSize)=>{
-    console.log(propSizes);
-    return fetchSizes(limit, fetchZones(allocate(propSizes, getRawSize)));
+export const getSizing = (limit, propSize, propSizes, getRawSize)=>{
+    return fetchSizes(limit, fetchZones(allocate(propSize, propSizes, getRawSize)));
 }

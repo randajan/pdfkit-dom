@@ -31,7 +31,8 @@ const msgDef = (tagName, text, list)=>{
 }
 
 const validateOutput = (tagName, outputType, output)=>{
-    if (!outputType || jet.is(outputType, output)) { return output; }
+    if (!outputType) { return output; }
+    if (jet.is(outputType, output)) { return output; }
     throw Error(msg(tagName, "expected output type is " + outputType + "\n got " + output));
 }
 
