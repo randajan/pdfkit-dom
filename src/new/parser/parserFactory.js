@@ -17,17 +17,21 @@ export const createParser = props=>{
         }
     }
 
-    return typize((input, def)=>{
+    const parser = typize((input, defs)=>{
         const isObj = Object.jet.is(input);
         const arr = isObj ? [] : Array.jet.to(input, " ");
 
         const r = {};
         for (let i in props) {
-            const [name, parser, retrieve, aliases] = props[i];
-            solid(r, name, parser(isObj ? retrieve(input) : arr[i], arr, r));
+            const [name, parse, retrieve, aliases] = props[i];
+            const value = isObj ? retrieve(input) : arr[i];
+            const d = defs ? defs[name] : undefined;
+            solid(r, name, parse(value, d, arr, r));
         }
         
         return r;
     });
+
+    return parser;
 
 };

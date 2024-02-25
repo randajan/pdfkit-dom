@@ -1,18 +1,29 @@
+import { computeGaps as cg } from "../../../methods/compute";
+import { PDFNode } from "../../class/PDFNode";
+
+export const NodeConstructor = PDFNode;
+
+// export const defaultProps = {
+
+// };
+
+export const computeGaps = element=>cg(1, 1, element.props);
 
 export const setWidthRaw = (node)=>{
-    return node.reduce(async (w, c)=>Math.max(w, await c.setWidthRaw()), 0);
+    return node.reduceSum(c=>c.setWidthRaw());
 };
 
 export const setWidthContent = (node)=>{
-    return node.reduce(async (w, c)=>Math.max(w, await c.setWidth(node.widthContentLimit)), 0);
+    const ratio = node.widthContentLimit / node.widthRaw;
+    return node.reduceSum(c=>c.setWidth(c.widthRaw*ratio));
 };
     
 export const setHeightRaw = node=>{
-    return node.reduce(async (h, c)=>h + await c.setHeightRaw(), 0);
+    return node.reduceMax(c=>c.setHeightRaw());
 };
 
 export const setHeightContent = node=>{
-    return node.reduce(async (h, c)=>h + await c.setHeight(node.heightContentLimit), 0);
+    return node.reduceMax(c=>c.setHeight(node.heightContentLimit));
 };
 
 
@@ -58,6 +69,6 @@ export const render = (node, x, y)=>{
 
     return node.forEach(async c=>{
         await c.render(x, y);
-        y = y+c.height;
+        x = x+c.width;
     });
 }

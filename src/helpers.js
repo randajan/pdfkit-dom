@@ -5,21 +5,38 @@ export const vault = jet.vault();
 
 export const sides = ["top", "left", "right", "bottom"];
 
-export const notNullString = (src)=>!src ? undefined : String.jet.to(src);
-export const notNullNumber = (src)=>src == null ? undefined : Number.jet.to(src);
-export const notNullMinZeroNumber = (src)=>src == null ? undefined : Number.jet.frame(Number.jet.to(src), 0);
+export const notNull = (...src)=>{
+    for (const item of src) { if (item != null && item != "") { return item; } }
+}
 
-export const minNumber = (src, min)=>Math.max(Number.jet.to(src), min);
-export const minZeroNumber = (src)=>Math.max(Number.jet.to(src), 0);
+export const onNotNull = (on, ...src)=>{
+    const v = notNull(...src);
+    if (v != null) { return on(v); }
+}
 
+export const notNullBoolean = (...src)=>onNotNull(Boolean.jet.to, ...src);
+export const notNullString = (...src)=>onNotNull(String.jet.to, ...src);
+export const notNullNumber = (...src)=>onNotNull(Number.jet.to, ...src);
+
+export const notNullMinZeroNumber = (...src)=>onNotNull(minZeroNumber, ...src);
+
+export const minNumber = (min, ...src)=>Math.max(min, Number.jet.to(notNull(...src)));
+export const minZeroNumber = (...src)=>Math.max(0, Number.jet.to(notNull(...src)));
+
+export const sum = (...nums)=>nums.reduce((r, n)=>r+n, 0);
 
 export const enumFactory = (enums, after)=>jet.enumFactory(enums, { before:src=>String.jet.to(src).jet.simplify(), after });
 
 export const typize = fce=>{
     const $$kind = Symbol(String.jet.rnd(5));
     const is = any=>any?.$$kind === $$kind;
+    const parse = (input, defs)=>{
+        if (is(input)) { return input; }
+        if (defs && !is(defs)) { defs = fce(defs); }
+        return solid(fce(input, defs), "$$kind", $$kind, false)
+    };
 
-    return solid((blob, ...a)=>is(blob) ? blob : solid(fce(blob, ...a), "$$kind", $$kind), "is", is);
+    return solid(parse, "is", is, false);
 }
 
 export const mapSides = callback=>{

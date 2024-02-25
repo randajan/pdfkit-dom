@@ -9,7 +9,7 @@ import { newContent } from "./new.jsx";
 
 
 
-const doc = PDF.create();
+const doc = PDF.create({layout:"landscape"});
 
 doc.render(newContent, fs.createWriteStream('tmp/file.pdf'));
 

@@ -1,22 +1,29 @@
+import { computeGaps as cg } from "../../../methods/compute";
+import { PDFElement } from "../../class/PDFElement";
+import { PDFNode } from "../../class/PDFNode";
 
-export const defaultStyle = {
-    width:"max"
+export const NodeConstructor = PDFNode;
+
+export const defaultProps = {
+
 };
 
+export const computeGaps = element=>cg(1, 1, element.props);
+
 export const setWidthRaw = (node)=>{
-    return node.reduce(async (w, c)=>Math.max(w, await c.setWidthRaw()), 0);
+    return node.reduceMax(c=>c.setWidthRaw());
 };
 
 export const setWidthContent = (node)=>{
-    return node.reduce(async (w, c)=>Math.max(w, await c.setWidth(node.widthContentLimit)), 0);
+    return node.reduceMax(c=>c.setWidth(node.widthContentLimit));
 };
     
 export const setHeightRaw = node=>{
-    return node.reduce(async (h, c)=>h + await c.setHeightRaw(), 0);
+    return node.reduceSum(c=>c.setHeightRaw());
 };
 
 export const setHeightContent = node=>{
-    return node.reduce(async (h, c)=>h + await c.setHeight(node.heightContentLimit), 0);
+    return node.reduceSum(c=>c.setHeight(node.heightContentLimit))
 };
 
 

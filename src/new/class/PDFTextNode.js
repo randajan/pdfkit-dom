@@ -14,11 +14,11 @@ const createOptions = (props, width, height)=>{
     let opt;
 
     if (!props) { opt = {} } else {
-        const { align, font, spacing, link, lineBreak, ellipsis, columns } = props;
+        const { align, font, spacing, link, lineBreak, ellipsis } = props;
 
         opt = {
             align:align.horizontal, baseline:align.baseline,
-            oblique:font.italic, underline:font.underline, columns, //columnGap:gaps.column,
+            oblique:font.italic, underline:font.underline, //columnGap:gaps.column,
             lineGap:spacing.line, wordSpacing:spacing.word, characterSpacing:spacing.character,
             link, lineBreak, ellipsis
         }
@@ -58,35 +58,39 @@ export class PDFTextNode {
     _setHeightLimit(heightLimit) { solid(this, "heightLimit", minZeroNumber(heightLimit)); }
     _setHeight(height) { solid(this, "height", Number.jet.frame(height, 0, this.heightLimit)); }
 
-    //STEP 1
+    async validate() {
+        return true;
+    }
+
+    //STEP 2
     async setWidthRaw() {
         const { kit, current } = vault.get(this.gen.uid);
         this._setWidthRaw(kit.widthOfString(this.element, createOptions(current[0].props)))
         return this.widthRaw;
     }
 
-    //STEP 2
+    //STEP 3
     async setWidth(widthLimit) {
         this._setWidthLimit(widthLimit);
         this._setWidth(this.widthRaw);
         return this.width;
     }
 
-    //STEP 2
+    //STEP 4
     async setHeightRaw() {
         const { kit, current } = vault.get(this.gen.uid);
         this._setHeightRaw(kit.heightOfString(this.element, createOptions(current[0].props, this.width)));
         return this.heightRaw;
     }
 
-    //STEP 4
+    //STEP 5
     async setHeight(heightLimit) {
         this._setHeightLimit(heightLimit);
         this._setHeight(this.heightRaw);
         return this.height;
     }
 
-    //STEP 5
+    //STEP 6
     async render(x, y) {
         const { kit, current } = vault.get(this.gen.uid);
         const { gen, element } = this;

@@ -3,19 +3,24 @@ import { sides } from "../helpers";
 
 const { solid, safe, cached, virtual } = jet.prop;
 
-export const computeGaps = (style = {})=>{
-    const { margin, border, padding, grid } = style;
+export const computeGaps = (style = {} )=>{
+    const { rows, columns, margin, border, padding, grid:{ horizontal, vertical } } = style;
     const gaps = {};
 
     for (const side of sides) {
         solid(gaps, side, margin[side]+border[side].weight+padding[side]);
     }
 
+    const row = border.row.weight ? horizontal*2+border.row.weight : horizontal;
+    const column = border.column.weight ? vertical*2+border.column.weight : vertical;
+
+    const gapsRow = row*(Math.max(1, rows.length)-1);
+    const gapsColumn = column*(Math.max(1, columns.length)-1);
+
     return solid.all(gaps, {
-        width:gaps.left+gaps.right,
-        height:gaps.top+gaps.bottom,
-        row:border.row.weight ? grid.horizontal*2+border.row.weight : grid.horizontal,
-        column:border.column.weight ? grid.vertical*2+border.column.weight : grid.vertical
+        width:gaps.left+gaps.right+gapsColumn,
+        height:gaps.top+gaps.bottom+gapsRow,
+        row, column
     });
 }
 

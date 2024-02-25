@@ -1,11 +1,15 @@
 import jet from "@randajan/jet-core";
 
 import { parseProps } from "./../parser/parsers";
+import { PDFNode } from "../class/PDFNode";
 
 
 const _elements = {};
 const _defs = {
-    "defaultStyle":{ type:"object", isRequired:false, transform:parseProps, output:"object" },
+    "validate":{ type:"function" },
+    "NodeConstructor":{ type:PDFNode, isRequired:true },
+    "defaultProps":{ type:"object", isRequired:false, transform:parseProps, output:"object" },
+    "computeGaps":{ type:"function", isRequired:true,  },
     "setWidthRaw":{ type:"function", isRequired:true, output:"number" },
     "setWidthContent":{ type:"function", isRequired:true, output:"number" },
     "setHeightRaw":{ type:"function", isRequired:true, output:"number" },
@@ -27,7 +31,7 @@ const msgDef = (tagName, text, list)=>{
 }
 
 const validateOutput = (tagName, outputType, output)=>{
-    if (typeof output === outputType) { return output; }
+    if (!outputType || jet.is(outputType, output)) { return output; }
     throw Error(msg(tagName, "expected output type is " + outputType + "\n got " + output));
 }
 
@@ -44,7 +48,7 @@ export const elementDefine = (tagName, definition={})=>{
 
     const mistype = _defsList.reduce((r, d)=>{
         const { type, output } = _defs[d], prop = definition[d];
-        if (definition[d] != null && typeof definition[d] !== type) { r.push(`${d} expect ${type}`); }
+        if (definition[d] != null && jet.is(definition[d], type)) { r.push(`${d} expect ${type}`); }
         if (type === "function" && output) { definition[d] = async (...a)=>validateOutput(tagName, output, await prop(...a));}
         return r;
     }, []);

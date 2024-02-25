@@ -1,115 +1,104 @@
 import jet from "@randajan/jet-core";
-import { notNullNumber, notNullMinZeroNumber, notNullString, minZeroNumber, enumFactory, flatArray, minNumber, typize } from "../../helpers";
+import { notNullNumber, notNullMinZeroNumber, notNullString, minZeroNumber, enumFactory, flatArray, minNumber, typize, notNullBoolean, notNull } from "../../helpers";
 import { createParser } from "./parserFactory";
 
 const { solid } = jet.prop;
 
-export const parseBound = createParser([
-    ["x", v=>Number.jet.to(v)],
-    ["y", v=>Number.jet.to(v)],
-    ["width", minZeroNumber],
-    ["height", minZeroNumber]
-]);
-
 export const parseSize = createParser([
-    ["main|current|target", enumFactory(["min", "max"], (v, a)=>v ? v : (minZeroNumber(a[0]) || "min"))],
-    ["min", (v, a, r)=>typeof r.main === "number" ? r.main : minZeroNumber(v)],
-    ["max", (v, a, r)=>typeof r.main === "number" ? r.main : v == null ? Infinity : minNumber(v, r.min)],
+    ["main|current|target", enumFactory(["min", "max"], (v, d, a)=>v ? v : (minZeroNumber(a[0]) || d || "min"))],
+    ["min", (v, d)=>minZeroNumber(v, d)],
+    ["max", (v, d, a, r)=>minNumber(r.min, v, d, Infinity) ],
 ]);
 
 export const parseSide = createParser([
-    ["top|horizontal", minZeroNumber],
-    ["right|vertical", (v, a)=>minZeroNumber(v != null ? v : a[0])],
-    ["bottom|horizontal", (v, a)=>minZeroNumber(v != null ? v : a[0])],
-    ["left|vertical", (v, a)=>minZeroNumber(v != null ? v : a[1] != null ? a[1] : a[0])],
+    ["top|horizontal", (v, d)=>minZeroNumber(v, d)],
+    ["right|vertical", (v, d, a)=>minZeroNumber(v, a[0], d)],
+    ["bottom|horizontal", (v, d, a)=>minZeroNumber(v, a[0], d)],
+    ["left|vertical", (v, d, a)=>minZeroNumber(v, a[1], a[0], d)],
 ]);
 
 export const parseFont = createParser([
-    ["size", notNullMinZeroNumber],
-    ["family", notNullString],
-    ["italic|oblique", enumFactory(["true", "italic", "oblique"], (v, a)=>v ? true : (Number.jet.to(a[2]) || false))],
-    ["underline", enumFactory(["true", "underline"], (v, a)=>v ? true : (a[3] != "" && Boolean.jet.to(a[3])))]
+    ["size", (v, d)=>notNullMinZeroNumber(v, d)],
+    ["family", (v, d)=>notNullString(v, d)],
+    ["italic|oblique", enumFactory(["true", "italic", "oblique"], (v, d, a)=>v ? true : notNull(notNullMinZeroNumber(a[2]), d))],
+    ["underline", enumFactory(["true", "underline"], (v, d, a)=>v ? true : notNullBoolean(a[3], d))]
 ]);
 
 export const parseAlign = createParser([
-    ["horizontal|x", enumFactory(["center", "right", "justify"], v=>v || "left")],
-    ["vertical|y", enumFactory(["middle", "bottom"], v=>v || "top")],
-    ["baseline", enumFactory(["top", "bottom", "middle", "alphabetic", "hanging"], v=>v || "common")]
+    ["horizontal|x", enumFactory(["center", "right", "justify"], (v, d)=>v || d || "left")],
+    ["vertical|y", enumFactory(["middle", "bottom"], (v, d)=>v || d || "top")],
+    ["baseline", enumFactory(["top", "bottom", "middle", "alphabetic", "hanging"], (v, d)=>v || d || "common")]
 ]);
 
 export const parseGrid = createParser([
-    ["horizontal|x", minZeroNumber],
-    ["vertical|y", (v, a)=>minZeroNumber(v != null ? v : a[0])],
+    ["horizontal|x", (v, d)=>minZeroNumber(v, d)],
+    ["vertical|y", (v, d, a)=>minZeroNumber(v, a[0], d)],
 ]);
 
 export const parseSpacing = createParser([
-    ["line", notNullNumber],
-    ["word", notNullNumber],
-    ["character|char", notNullNumber]
+    ["line", (v, d)=>notNullNumber(v, d)],
+    ["word", (v, d)=>notNullNumber(v, d)],
+    ["character|char", (v, d)=>notNullNumber(v, d)]
 ]);
 
 export const parseColor = createParser([
-    ["foreground|fore|font|text|stroke", notNullString],
-    ["background|back", notNullString]
+    ["foreground|fore|font|text|stroke", (v, d)=>notNullString(v, d)],
+    ["background|back", (v, d)=>notNullString(v, d)]
 ]);
 
 export const parseBorder = createParser([
-    ["weight", minZeroNumber],
-    ["color", notNullString],
-    ["dash", notNullMinZeroNumber]
+    ["weight", (v, d)=>minZeroNumber(v, d)],
+    ["color", (v, d)=>notNullString(v, d)],
+    ["dash", (v, d)=>notNullMinZeroNumber(v, d)]
 ]);
 
-export const parseBorders = typize((blob)=>{
-    if (parseBorders.is(blob)) { return blob; }
+//not defaultable
+export const parseSizes = typize((v, d)=>(typeof v === "number" ? Array(v).fill("auto") : Array.jet.to(v, " ")).map(v=>parseSize(v, d)));
+export const parseRows = parseSizes;
+export const parseColumns = parseSizes;
 
-    const bulk = {};
-
-    if (!Object.jet.is(blob)) { bulk.all = parseBorder(blob); }
-    else {
-        if (blob.horizontal) { bulk.horizontal = parseBorder(blob.horizontal); }
-        if (blob.vertical) { bulk.vertical = parseBorder(blob.vertical); }
-        if (blob.inner) { bulk.inner = parseBorder(blob.inner); }
-        if (blob.outer) { bulk.outer = parseBorder(blob.outer); }
-    }
+export const parseBorders = typize((v, d)=>{
+    if (!Object.jet.is(v)) { v = {all:v}; }
 
     return solid.all({}, {
-        top:bulk.all || parseBorder(blob.top || bulk.horizontal || bulk.outer),
-        right:bulk.all || parseBorder(blob.right || bulk.vertical || bulk.outer),
-        bottom:bulk.all || parseBorder(blob.bottom || bulk.horizontal || blob.outer),
-        left:bulk.all || parseBorder(blob.left || bulk.vertical || bulk.outer),
-        row:bulk.all || parseBorder(blob.row || bulk.horizontal || bulk.inner),
-        column:bulk.all || parseBorder(blob.column || bulk.vertical || bulk.inner),
+        top:parseBorder(v.all || v.top || v.horizontal || v.outer, d?.top),
+        right:parseBorder(v.all || v.right || v.vertical || v.outer, d?.right),
+        bottom:parseBorder(v.all || v.bottom || v.horizontal || v.outer, d?.bottom),
+        left:parseBorder(v.all || v.left || v.vertical || v.outer, d?.left),
+        row:parseBorder(v.all || v.row || v.horizontal || v.inner, d?.row),
+        column:parseBorder(v.all || v.column || v.vertical || v.inner, d?.column),
     });
 });
 
-export const parseProps = typize((blob={}, defaults={})=>{
-    blob = blob || {};
+export const parseProps = typize((v, defs)=>{
+    v = v || {};
 
     const {
-        width, height, grid,
+        width, height, grid, rows, columns,
         font, margin, padding, border, align, color,
-        spacing, link, lineBreak, ellipsis, columns, paging,
+        spacing, link, lineBreak, ellipsis, paging,
         children
-    } = blob;
+    } = v;
 
     return solid.all({}, {
-        ...blob,
-        color:parseColor(color),
-        link:notNullString(link),
-        columns:minZeroNumber(columns) || 1,
-        lineBreak:lineBreak == null ? true : Boolean.jet.to(lineBreak),
-        paging:paging == null ? true : Boolean.jet.to(paging),
-        ellipsis:notNullString(ellipsis),
-        spacing:parseSpacing(spacing),
-        grid:parseGrid(grid),
-        width:parseSize(width),
-        height:parseSize(height),
-        font:parseFont(font),
-        margin:parseSide(margin),
-        padding:parseSide(padding),
-        border:parseBorders(border),
-        align:parseAlign(align),
-        children:flatArray(children)
+        ...v,
+        color:parseColor(color, defs?.color),
+        link:notNullString(link, defs?.link),
+        rows:parseRows(rows, defs?.rows),
+        columns:parseColumns(columns, defs?.columns),
+        lineBreak:notNullBoolean(lineBreak, defs?.lineBreak, true),
+        paging:notNullBoolean(paging, defs?.paging, true),
+        ellipsis:notNullString(ellipsis, defs?.ellipsis),
+        spacing:parseSpacing(spacing, defs?.spacing),
+        grid:parseGrid(grid, defs?.grid),
+        width:parseSize(width, defs?.width),
+        height:parseSize(height, defs?.height),
+        font:parseFont(font, defs?.font),
+        margin:parseSide(margin, defs?.margin),
+        padding:parseSide(padding, defs?.padding),
+        border:parseBorders(border, defs?.border),
+        align:parseAlign(align, defs?.align),
+        children:flatArray(children || defs?.children)
     });
 
 })

@@ -5,11 +5,14 @@ import { PDFTextNode } from "./PDFTextNode";
 import { drawBorders } from "../rendering/drawBorders";
 import { drawBackground } from "../rendering/drawBackground";
 import { parseBorders } from "../parser/parsers";
+import { drawHorizontal, drawVertical } from "../rendering/drawLine";
 
 const { solid, virtual, cached } = jet.prop;
 
-const frameSize = (num, propSize, respectMin=true)=>{
-    const { min, max } = propSize;
+const frameSize = (num, propSize, maximaze=true, respectMin=true)=>{
+    let { main, min, max } = propSize;
+    if (maximaze && main === "max") { num = max; }
+    else if (typeof main == "number") { min = max = main; }
     return respectMin ? Number.jet.frame(num, min, max) : Math.min(num, max);
 }
 
@@ -28,7 +31,7 @@ const moveBoundBy = (bound, prop)=>{
 export class PDFNode extends PDFTextNode {
 
     static create(gen, element, parent) {
-        if (PDFElement.is(element)) { return new PDFNode(gen, element, parent); }
+        if (PDFElement.is(element)) { return new element.NodeConstructor(gen, element, parent); }
         return new PDFTextNode(gen, element, parent);
     }
 
@@ -45,6 +48,7 @@ export class PDFNode extends PDFTextNode {
         virtual.all(this, {
             widthFix:_=>typeof props.width.main === "number" ? props.width.main : undefined,
             heightFix:_=>typeof props.height.main === "number" ? props.height.main : undefined,
+            childCount:_=>children.length
         });
 
         solid.all(this, {
@@ -60,18 +64,19 @@ export class PDFNode extends PDFTextNode {
                 for (const i in children) { init = await callback(init, children[i], i, children.length); }
                 return init;
             },
+            getChildren:id=>children[id]
         }, false);
     }
 
     _setWidthRaw(widthRaw) {
         const { gaps, props:{ width } } = this.element;
         
-        super._setWidthRaw(frameSize(widthRaw+gaps.width, width));
+        super._setWidthRaw(frameSize(widthRaw+gaps.width, width, false));
     }
 
     _setWidthLimit(widthLimit) {
         const { gaps, props:{ width } } = this.element;
-        super._setWidthLimit(frameSize(widthLimit, width, false));
+        super._setWidthLimit(frameSize(widthLimit, width, false, false));
         solid(this, "widthContentLimit", minZeroNumber(this.widthLimit-gaps.width));
     }
 
@@ -83,12 +88,12 @@ export class PDFNode extends PDFTextNode {
 
     _setHeightRaw(heightRaw) {
         const { gaps, props:{ height } } = this.element;
-        super._setHeightRaw(frameSize(heightRaw+gaps.height, height));
+        super._setHeightRaw(frameSize(heightRaw+gaps.height, height, false));
     }
 
     _setHeightLimit(heightLimit) {
         const { gaps, props:{ height} } = this.element;
-        super._setHeightLimit(frameSize(heightLimit, height, false));
+        super._setHeightLimit(frameSize(heightLimit, height, false, false));
         solid(this, "heightContentLimit", minZeroNumber(this.heightLimit-gaps.height));
     }
 
@@ -98,14 +103,28 @@ export class PDFNode extends PDFTextNode {
         solid(this, "heightContent", minZeroNumber(this.height-gaps.height));
     }
 
+    async reduceMax(getValueFromChild) {
+        return this.reduce(async (v, c, i, l)=>Math.max(v, await getValueFromChild(c, i, l)), 0);
+    }
+
+    async reduceSum(getValueFromChild) {
+        return this.reduce(async (v, c, i, l)=>v + await getValueFromChild(c, i, l), 0);
+    }
+
     //STEP 1
+    async validate() {
+        if (this.element.validate) { await this.element?.validate(this); }
+        await this.forEach(c=>c.validate());
+    }
+
+    //STEP 2
     async setWidthRaw() {
         const { gen, element } = this;
         this._setWidthRaw(await gen.withProps(element.props, _=>element.setWidthRaw(this)));
         return this.widthRaw;
     }
 
-    //STEP 2
+    //STEP 3
     async setWidth(widthLimit) {
         const { gen, element } = this;
         this._setWidthLimit(widthLimit);
@@ -113,14 +132,14 @@ export class PDFNode extends PDFTextNode {
         return this.width;
     }
 
-    //STEP 3
+    //STEP 4
     async setHeightRaw() {
         const { gen, element } = this;
         this._setHeightRaw(await gen.withProps(element.props, _=>element.setHeightRaw(this)));
         return this.heightRaw;
     }
 
-    //STEP 4
+    //STEP 5
     async setHeight(heightLimit) {
         const { gen, element } = this;
         this._setHeightLimit(heightLimit);
@@ -128,9 +147,9 @@ export class PDFNode extends PDFTextNode {
         return this.height;
     }
 
-    //STEP 5
+    //STEP 6
     async render(x, y) {
-        const { gen, element, width, height } = this;
+        const { gen, element, width, height, rows, columns } = this;
         const { margin, border, padding, color } = element.props;
         const { kit } = vault.get(gen.uid);
 
@@ -141,6 +160,22 @@ export class PDFNode extends PDFTextNode {
 
         moveBoundBy(b, border)
         drawBackground(kit, b.x, b.y, b.width, b.height, color);
+
+        if (rows) {
+            let y = b.y + padding.top;
+            for (let i=1; i<rows.length; i++) {
+                y += rows[i-1] + element.gaps.row;
+                drawHorizontal(kit, b.x, y-element.gaps.row/2, b.width, border.row);
+            }
+        }
+
+        if (columns) {
+            let x = b.x + padding.left;
+            for (let i=1; i<columns.length; i++) {
+                x += columns[i-1] + element.gaps.column;
+                drawVertical(kit, x-element.gaps.column/2, b.y, b.height, border.column);
+            }
+        }
 
         moveBoundBy(b, padding);
         await gen.withProps(element.props, _=>element.render(this, b.x, b.y, b.width, b.height));

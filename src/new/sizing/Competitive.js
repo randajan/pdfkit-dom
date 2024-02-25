@@ -1,111 +1,75 @@
 import { Allocator } from "./Allocator";
 
 import jet from "@randajan/jet-core";
-import { vault } from "../helpers";
+import { parseSize, parseSizes } from "../parser/parsers";
 
-const { solid, cached, virtual } = jet.prop;
+const _zones = ["min", "set", "req", "ext"];
 
-const rawSizeCollector = (current, cell)=>current+cell.rawSize;
+const rawSizeCollector = (current, cell)=>current+cell.sizeRaw;
 
-export class CompetitiveSizingSchema {
+const allocate = (sizes, getRawSize)=>{
+    sizes = parseSizes(sizes);
+
+    const allocator = new Allocator(_zones); 
     
-    constructor(length, fetchStyle, fetchRawSize) {
+    for (let index=0; index<sizes.length; index++) {
+        const { main, min, max } = sizes[index];
+        const sizeRaw = getRawSize(index);
 
-        const [uid, _p] = vault.set({
-            fetchStyle,
-            fetchRawSize,
-            sizes:Array(length).fill(0),
-            followers:new Set()
-        });
+        const cell = { index, sizeRaw };
+        const byMin = main === "min", byMax = main === "max";
 
-        virtual(this, "sizes", _=>_p.follow ? _p.follow.sizes : [..._p.sizes]);
+        const set = (byMin || byMax) ? min : Number.jet.frame(main, min, max);
+        const req = (!byMin && !byMax) ? set : Number.jet.frame(sizeRaw, min, max);
 
-        solid.all(this, {
-            uid,
-            length,
-        });
+        allocator.add(0, min, "min", cell);
+        allocator.add(min, set, "set", cell);
+        allocator.add(set, req, "req", cell);
 
+        if (req <= max) { allocator.add(req, max, "ext", cell); }
     }
 
-    fetchZones() {
-        const _p = vault.get(this.uid);
-
-        const allocator = new Allocator(
-            p=>{ p.minimal = []; p.absolute = []; p.relative = []; },
-            (t, f)=>{ t.minimal = [...f.minimal]; t.absolute = [...f.absolute]; t.relative = [...f.relative]; },
-            (p, kind, cell)=>p[kind].push(cell)
-        );
-        
-        for (let index=0; index<this.length; index++) {
-            let rawSize = _p.fetchRawSize(index);
-
-            for (const follower of _p.followers) {
-                rawSize = Math.max(rawSize, vault.get(follower.uid).fetchRawSize(index));
-            }
-
-            const cell = { index, rawSize };
-            
-            const { main, min, max } = _p.fetchStyle(index);
-            const byMin = main === "min", byMax = (main === "max" || main === "auto");
-
-            if (!byMin && !byMax) { allocator.add(0, Math.max(main, min), "minimal", cell); continue; } //static
-            else if (min > 0) { allocator.add(0, min, "minimal", cell); } //relative with min
-    
-            if (byMax) { allocator.add(min, max, max === Infinity ? "relative" : "absolute", cell); }
-            if (byMin) { allocator.add(min, Math.min(max, cell.rawSize), "absolute", cell); }
-        }
-    
-        const zones = [[], []];
-        allocator.list.reduce((from, { to, minimal, absolute, relative })=>{
-            const size = to-from;
-            if (minimal.length) { zones[0].push({to, size, targets:minimal}); }
-            if (absolute.length) { zones[1].push({to, size, targets:absolute}); }
-            if (relative.length) { zones[1].push({to, size, targets:relative, isRelative:true, relativeSize:relative.reduce(rawSizeCollector, 0)});}
-            return to;
-        }, 0);
-
-        return [...zones[0], ...zones[1]];
-    }
-
-    fetchSizes(zones, freeSpace) {
-        const sizes = [];
-    
-        for (const { size, targets, isRelative, relativeSize } of zones) {
-            if (freeSpace <= 0) { break; }
-            const toGive = Math.min(freeSpace, size*targets.length);
-    
-            for (const cell of targets) {
-                const val = toGive/(isRelative ? relativeSize/cell.rawSize : targets.length);
-                sizes[cell.index] = (sizes[cell.index] || 0) + val;
-                freeSpace -= val;
-            }
-        }
-
-        return sizes;
-    }
-
-    resize(freeSpace, recalculateZones=false) {
-        const _p = vault.get(this.uid);
-        if (_p.follow) { return _p.follow.resize(freeSpace, recalculateZones); }
-        if (recalculateZones || !_p.zones) { _p.zones = this.fetchZones(); }
-        _p.sizes = this.fetchSizes(_p.zones, freeSpace);
-        return this;
-    }
-
-    follow(competitiveSchema) {
-        const _p = vault.get(this.uid);
-        if (!(competitiveSchema instanceof CompetitiveSizingSchema)) { return this; }
-        if (_p.follow) { vault.get(_p.follow.uid).delete(this); }
-        _p.follow = competitiveSchema;
-        vault.get(competitiveSchema.uid).followers.add(this);
-        return this;
-    }
-
-    end() {
-        vault.end(this.uid);
-    }
-
+    return allocator;
 }
 
+const fetchZones = (allocator)=>{
+    const zones = _zones.map(z=>[]);
 
-export default (length, getStyle, getRawSize)=>new CompetitiveSizingSchema(length, getStyle, getRawSize)
+    let from = 0;
+
+    for (const a of allocator.list) {
+        const size = a.to-from;
+        for (const i in _zones) {
+            const zone = _zones[i];
+            const targets = a[zone];
+            if (!targets.length) { continue; }
+            zones[i].push({ size, zone, targets });
+        }
+        from = a.to;
+    }
+
+    return [].concat(...zones);
+}
+
+const fetchSizes = (limit, zones)=>{
+    const sizes = [];
+    for (const { size, zone, targets } of zones) {
+        if (limit <= 0) { break; }
+        const toGive = Math.min(limit, size*targets.length);
+        const isExt = zone === "ext";
+        const sizeRawTotal = isExt ? targets.reduce(rawSizeCollector, 0) : undefined;
+
+        for (const { index, sizeRaw } of targets) {
+            const val = toGive/(isExt ? sizeRawTotal/sizeRaw : targets.length);
+            sizes[index] = (sizes[index] || 0) + val;
+            limit -= val;
+        }
+    }
+
+    return sizes;
+}
+
+export const getSizing = (limit, propSizes, getRawSize)=>{
+    console.log(propSizes);
+    return fetchSizes(limit, fetchZones(allocate(propSizes, getRawSize)));
+}

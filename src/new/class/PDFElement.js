@@ -3,14 +3,13 @@ import { flatArray } from "../../helpers";
 import { elementPick } from "../elements/elements";
 import { parseProps } from "../parser/parsers";
 import { computeGaps } from "../../methods/compute";
+import { PDFNode } from "./PDFNode";
 
 const { solid, virtual } = jet.prop;
 
 export class PDFElement {
 
-    static is(any) {
-        return any instanceof PDFElement;
-    }
+    static is(any) { return any instanceof PDFElement; }
 
     static create(tagName, props, ...children) {
         if (!props) { props = {}; }
@@ -23,17 +22,22 @@ export class PDFElement {
 
         tagName = String.jet.to(tagName);
         if (!tagName) { return flatArray(props.children); }
+
         return new PDFElement(tagName, props);
     }
 
     constructor(tagName, props={}) {
         const def = elementPick(tagName);
-        props = parseProps(props, def.defaultStyle);
+        props = parseProps(props, def.defaultProps);
 
-        solid(this, "tagName", tagName );
-        virtual(this, "props", _=>({...props}));
-        solid(this, "gaps", computeGaps(props));
-        solid.all(this, def);
+        const gaps = computeGaps(props);
 
+        solid.all(this, {
+            tagName,
+            props,
+            gaps
+        });
+
+        solid.all(this, def, false);
     }
 }
