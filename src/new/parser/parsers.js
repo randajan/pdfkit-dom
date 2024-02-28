@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import { notNullNumber, notNullMinZeroNumber, notNullString, minZeroNumber, enumFactory, flatArray, minNumber, typize, notNullBoolean, notNull } from "../../helpers";
+import { notNullNumber, notNullMinZeroNumber, notNullString, minZeroNumber, enumFactory, flatArray, minNumber, typize, notNullBoolean, notNull, fitArray } from "../../helpers";
 import { createParser } from "./parserFactory";
 
 const { solid } = jet.prop;
@@ -43,19 +43,28 @@ export const parseSpacing = createParser([
 
 export const parseColor = createParser([
     ["foreground|fore|font|text|stroke", (v, d)=>notNullString(v, d)],
-    ["background|back", (v, d)=>notNullString(v, d)]
+    ["background|back", (v, d)=>notNullString(v, d)],
+    ["opacity", (v, d)=>notNullMinZeroNumber(v, d)]
 ]);
 
 export const parseBorder = createParser([
     ["weight", (v, d)=>minZeroNumber(v, d)],
     ["color", (v, d)=>notNullString(v, d)],
-    ["dash", (v, d)=>notNullMinZeroNumber(v, d)]
+    ["dash", (v, d)=>notNullMinZeroNumber(v, d)],
 ]);
 
 //not defaultable
-export const parseSizes = typize((v, d)=>(typeof v === "number" ? Array(v).fill("auto") : Array.jet.to(v, " ")).map(v=>parseSize(v, d)));
-export const parseRows = parseSizes;
-export const parseColumns = parseSizes;
+export const parseCell = createParser([
+    ["main|current|target", enumFactory(["min", "max"], (v, d, a)=>v ? v : (minZeroNumber(a[0]) || d || "min"))],
+    ["min", (v, d)=>minZeroNumber(v, d)],
+    ["max", (v, d, a, r)=>minNumber(r.min, v, d, Infinity) ],
+    ["background|back", (v, d)=>notNullString(v, d)],
+    ["opacity", (v, d)=>notNullMinZeroNumber(v, d)]
+]);
+
+export const parseCells = typize((v, d)=>(typeof v === "number" ? Array(v).fill("auto") : Array.jet.to(v, " ")).map(v=>parseCell(v, d)));
+export const parseRows = parseCells;
+export const parseColumns = parseCells;
 
 export const parseBorders = typize((v, d)=>{
     if (!Object.jet.is(v)) { v = {all:v}; }
@@ -74,18 +83,21 @@ export const parseProps = typize((v, defs)=>{
     v = v || {};
 
     const {
-        width, height, grid, rows, columns,
+        width, height, grid,
         font, margin, padding, border, align, color,
         spacing, link, lineBreak, ellipsis, paging,
-        children
     } = v;
+
+    const children = flatArray(v.children || defs?.children);
+    const columns = parseColumns(v.columns, defs?.columns);
+    const prerows = parseRows(v.rows, defs?.rows);
+    if (columns.length && !prerows.length) { prerows.push(parseCell()); }
+    const rows = !columns.length ? prerows : fitArray(prerows, Math.ceil(children.length / columns.length));
 
     return solid.all({}, {
         ...v,
         color:parseColor(color, defs?.color),
         link:notNullString(link, defs?.link),
-        rows:parseRows(rows, defs?.rows),
-        columns:parseColumns(columns, defs?.columns),
         lineBreak:notNullBoolean(lineBreak, defs?.lineBreak, true),
         paging:notNullBoolean(paging, defs?.paging, true),
         ellipsis:notNullString(ellipsis, defs?.ellipsis),
@@ -98,7 +110,9 @@ export const parseProps = typize((v, defs)=>{
         padding:parseSide(padding, defs?.padding),
         border:parseBorders(border, defs?.border),
         align:parseAlign(align, defs?.align),
-        children:flatArray(children || defs?.children)
+        rows,
+        columns,
+        children
     });
 
 })

@@ -1,16 +1,15 @@
-import { parseBorder } from "../parser/parsers";
+import { parseBorder} from "../parser/parsers";
 import { drawLine } from "./drawLine";
 
 const drawLines = (isVertical, kit, x, y, length, gap, list, propBorder)=>{
+    if (!Array.isArray(list)) { return; }
+
     const border = parseBorder(propBorder);
-
-    if (!Array.isArray(list) || border.color === "transparent") { return; }
-
-    let n = isVertical ? x : y;
-    for (let i=1; i<list.length; i++) {
-        n += list[i-1] + gap;
-        if (isVertical) { x = n-gap/2; } else { y = n-gap/2; }
-        drawLine(isVertical, kit, x, y, length, border);
+    
+    for (let i=0; i<list.length; i++) {
+        const size = list[i]+gap;
+        if (i>0) { drawLine(isVertical, kit, x, y, length, border); }
+        if (isVertical) { x +=size; } else { y += size; }
     }
 
 }

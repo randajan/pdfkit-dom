@@ -16,17 +16,12 @@ export const defaultProps = {
     border:"1 black"
 };
 
-
-export const computeGaps = element=>cg(1, 1, element.props);
-
 export const validate = node=>{
-    const { childCount, element } = node;
-    const { rows, columns } = element.props;
-    const expectedChild = rows.length*columns.length;
-    if (childCount === expectedChild) { return; }
-    throw Error(`Grid incorrect child count ${childCount}/${expectedChild}`);
+    const { columns } = node.element.props;
+    
+    if (columns.length) { return; }
+    throw Error(`Grid requires columns to be set`);
 }
-
 
 export const setWidthRaw = async (node)=>{
     const total = [];
@@ -34,7 +29,7 @@ export const setWidthRaw = async (node)=>{
     await node.forEach(async (child, index)=>{
         const rid = getRid(node, index);
         if (!total[rid]) { total[rid] = 0; }
-        total[rid] += await child.setWidthRaw();
+        total[rid] = (total[rid] || 0) + await child.setWidthRaw();
     });
 
     return Math.max(...total);
@@ -44,7 +39,7 @@ export const setWidthContent = async (node)=>{
     const { width, rows, columns } = node.element.props;
 
     const sizing = getSizing(node.widthContentLimit, width, columns, cid=>{
-        return rows.reduce((v, r, rid)=>Math.max(v, getChild(node, rid, cid).widthRaw), 0);
+        return rows.reduce((v, r, rid)=>Math.max(v, getChild(node, rid, cid)?.widthRaw), 0);
     });
 
     await node.forEach(async (child, index)=>{
@@ -74,7 +69,7 @@ export const setHeightContent = async node=>{
     const total = [];
 
     const sizing = getSizing(node.heightContentLimit, height, rows, rid=>{
-        return columns.reduce((v, r, cid)=>Math.max(v, getChild(node, rid, cid).heightRaw), 0);
+        return columns.reduce((v, r, cid)=>Math.max(v, getChild(node, rid, cid)?.heightRaw), 0);
     });
 
     await node.forEach(async (child, index)=>{

@@ -9,8 +9,6 @@ export const defaultProps = {
 
 };
 
-export const computeGaps = element=>cg(1, 1, element.props);
-
 export const setWidthRaw = (node)=>{
     return node.reduceMax(c=>c.setWidthRaw());
 };

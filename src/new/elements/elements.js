@@ -9,7 +9,6 @@ const _defs = {
     "validate":{ type:"function" },
     "NodeConstructor":{ type:PDFNode, isRequired:true },
     "defaultProps":{ type:"object", isRequired:false, transform:parseProps, output:"object" },
-    "computeGaps":{ type:"function", isRequired:true,  },
     "setWidthRaw":{ type:"function", isRequired:true, output:"number" },
     "setWidthContent":{ type:"function", isRequired:true, output:"number" },
     "setHeightRaw":{ type:"function", isRequired:true, output:"number" },

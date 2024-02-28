@@ -7,6 +7,7 @@ import { drawBackground } from "../rendering/drawBackground";
 import { parseBorders } from "../parser/parsers";
 import { drawHorizontal, drawVertical } from "../rendering/drawLine";
 import { drawHorizontals, drawVerticals } from "../rendering/drawLines";
+import { drawHorizontalRects, drawVerticalRects } from "../rendering/drawBackgrounds";
 
 const { solid, virtual, cached } = jet.prop;
 
@@ -15,18 +16,6 @@ const frameSize = (num, propSize, maximaze=true, respectMin=true)=>{
     if (maximaze && main === "max") { num = max; }
     else if (typeof main == "number") { min = max = main; }
     return respectMin ? Number.jet.frame(num, min, max) : Math.min(num, max);
-}
-
-const moveBoundBy = (bound, prop)=>{
-    const isBorder = parseBorders.is(prop);
-    const w = mapSides(side=>isBorder ? prop[side].weight : prop[side]);
-
-    bound.x += w.left;
-    bound.y += w.top;
-    bound.width -= w.left + w.right; 
-    bound.height -= w.top + w.bottom;
-
-    return bound;
 }
 
 export class PDFNode extends PDFTextNode {
@@ -150,23 +139,33 @@ export class PDFNode extends PDFTextNode {
 
     //STEP 6
     async render(x, y) {
-        const { gen, element, width, height, rows, columns } = this;
+        const { gen, element, rows, columns } = this;
         const { margin, border, padding, color } = element.props;
         const { kit } = vault.get(gen.uid);
 
-        const b = { x, y, width, height };
+        const { left, top, right, bottom } = border
 
-        moveBoundBy(b, margin);
-        drawBorders(kit, b.x, b.y, b.width, b.height, border);
+        let { width, height } = this;
 
-        moveBoundBy(b, border)
-        drawBackground(kit, b.x, b.y, b.width, b.height, color);
+        x += margin.left + left.weight;
+        y += margin.top + top.weight;
+        width -= margin.left + margin.right + left.weight + right.weight;
+        height -= margin.top + margin.bottom + top.weight + bottom.weight;
 
-        drawHorizontals(kit, b.x, b.y+padding.top, b.width, element.gaps.row, rows, border.row);
-        drawVerticals(kit, b.x+padding.left, b.y, b.height, element.gaps.column, columns, border.column);
+        drawBackground(kit, x, y, width, height, color.background, color.opacity);
+        drawHorizontalRects(kit, x, y+padding.top, width, element.gaps.row, rows, element.props.rows);
+        drawVerticalRects(kit, x+padding.left, y, height, element.gaps.column, columns, element.props.columns);
 
-        moveBoundBy(b, padding);
-        await gen.withProps(element.props, _=>element.render(this, b.x, b.y, b.width, b.height));
+        drawBorders(kit, x - left.weight, y - top.weight, width + left.weight + right.weight, height + top.weight + bottom.weight, border);
+        drawHorizontals(kit, x, y+padding.top, width, element.gaps.row, rows, border.row);
+        drawVerticals(kit, x+padding.left, y, height, element.gaps.column, columns, border.column);
+
+        x += padding.left + element.gaps.column/2;
+        y += padding.top + element.gaps.row/2;
+        width -= padding.left + padding.right + element.gaps.row;
+        height -= padding.top + padding.bottom + element.gaps.column;
+
+        await gen.withProps(element.props, _=>element.render(this, x, y, width, height));
 
     }
 }

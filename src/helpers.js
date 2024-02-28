@@ -52,3 +52,17 @@ export const flatArray = (srcArr, dstArr=[])=>{
     }
     return dstArr;
 }
+
+export const fitArray = (arr, requestedLength)=>{
+    const length = arr?.length || 0;
+    if (!length || length === requestedLength) { return arr; }
+
+    const diff = Math.abs(length - requestedLength);
+    
+    for (let i=0; i < diff; i++) {
+        if (length > requestedLength) { arr.pop(); }
+        else { arr.push(arr[Number.jet.period(i, 0, length)]); }
+    }
+
+    return arr;
+}

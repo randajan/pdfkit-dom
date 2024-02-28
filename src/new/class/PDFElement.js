@@ -5,7 +5,7 @@ import { parseProps } from "../parser/parsers";
 import { computeAligns, computeGaps } from "../../methods/compute";
 import { PDFNode } from "./PDFNode";
 
-const { solid, virtual } = jet.prop;
+const { solid, cached, virtual } = jet.prop;
 
 export class PDFElement {
 
@@ -33,8 +33,11 @@ export class PDFElement {
         solid.all(this, {
             tagName,
             props,
-            gaps:computeGaps(props),
-            aligns:computeAligns(props)
+        });
+
+        cached.all(this, {}, {
+            gaps:_=>computeGaps(props),
+            aligns:_=>computeAligns(props),
         });
 
         solid.all(this, def, false);
