@@ -8,7 +8,7 @@ const drawLines = (isVertical, kit, x, y, length, gap, list, propBorder)=>{
     
     for (let i=0; i<list.length; i++) {
         const size = list[i]+gap;
-        if (i>0) { drawLine(isVertical, kit, x, y, length, border); }
+        //if (i>0) { drawLine(isVertical, kit, x, y, length, border); }
         if (isVertical) { x +=size; } else { y += size; }
     }
 

@@ -143,7 +143,7 @@ export class PDFNode extends PDFTextNode {
         const { margin, border, padding, color } = element.props;
         const { kit } = vault.get(gen.uid);
 
-        const { left, top, right, bottom } = border
+        const { left, top, right, bottom, row, column } = border
 
         let { width, height } = this;
 

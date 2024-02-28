@@ -14,8 +14,8 @@ export const computeGaps = (style = {} )=>{
     const row = border.row.weight ? horizontal*2+border.row.weight : horizontal;
     const column = border.column.weight ? vertical*2+border.column.weight : vertical;
 
-    const gapsRow = row*(Math.max(1, rows.length));
-    const gapsColumn = column*(Math.max(1, columns.length));
+    const gapsRow = Math.max(0, row*Math.max(1, rows.length));
+    const gapsColumn = Math.max(0, column*Math.max(1, columns.length));
 
     return solid.all(gaps, {
         width:gaps.left+gaps.right+gapsColumn,

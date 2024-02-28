@@ -19,7 +19,7 @@ export const drawLine = (isVertical, kit, x, y, length, propBorder)=>{
         kit.dash(space, { space, phase })
     }
 
-    kit.stroke(border.color);
+    kit.strokeOpacity(.2).stroke(border.color);
     kit.undash();
     
 }
