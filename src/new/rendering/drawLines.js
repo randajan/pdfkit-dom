@@ -5,11 +5,15 @@ const drawLines = (isVertical, kit, x, y, length, gap, list, propBorder)=>{
     if (!Array.isArray(list)) { return; }
 
     const border = parseBorder(propBorder);
-    
-    for (let i=0; i<list.length; i++) {
-        const size = list[i]+gap;
-        //if (i>0) { drawLine(isVertical, kit, x, y, length, border); }
-        if (isVertical) { x +=size; } else { y += size; }
+
+    if (!border.weight || border.color === "transparent") { return; }
+
+    const gapHalf = gap/2;
+    let n = isVertical ? x : y;
+    for (let i=0; i<(list.length-1); i++) {
+        n += list[i]+gapHalf;
+        drawLine(isVertical, kit, isVertical ? n : x, isVertical ? y : n, length, border);
+        n += gapHalf;
     }
 
 }

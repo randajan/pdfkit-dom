@@ -7,9 +7,9 @@ const drawBackgrounds = (isVertical, kit, x, y, length, gap, list, propCells)=>{
     const cells = fitArray(parseCells(propCells), list.length);
     
     for (let i=0; i<list.length; i++) {
-        const size = list[i]+gap;
+        const size = list[i];
         drawBackground(kit, x, y, isVertical ? size : length, isVertical ? length : size, cells[i]?.background, cells[i]?.opacity);
-        if (isVertical) { x +=size; } else { y += size; }
+        if (isVertical) { x +=size+gap; } else { y += size+gap; }
     }
 
 }

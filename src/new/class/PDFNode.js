@@ -140,7 +140,7 @@ export class PDFNode extends PDFTextNode {
     //STEP 6
     async render(x, y) {
         const { gen, element, rows, columns } = this;
-        const { margin, border, padding, color } = element.props;
+        const { margin, border, padding, color, grid } = element.props;
         const { kit } = vault.get(gen.uid);
 
         const { left, top, right, bottom, row, column } = border
@@ -153,17 +153,17 @@ export class PDFNode extends PDFTextNode {
         height -= margin.top + margin.bottom + top.weight + bottom.weight;
 
         drawBackground(kit, x, y, width, height, color.background, color.opacity);
-        drawHorizontalRects(kit, x, y+padding.top, width, element.gaps.row, rows, element.props.rows);
-        drawVerticalRects(kit, x+padding.left, y, height, element.gaps.column, columns, element.props.columns);
+        drawHorizontalRects(kit, x, y+padding.top+grid.vertical, width, element.gaps.row, rows, element.props.rows);
+        drawVerticalRects(kit, x+padding.left+grid.horizontal, y, height, element.gaps.column, columns, element.props.columns);
 
         drawBorders(kit, x - left.weight, y - top.weight, width + left.weight + right.weight, height + top.weight + bottom.weight, border);
-        drawHorizontals(kit, x, y+padding.top, width, element.gaps.row, rows, border.row);
-        drawVerticals(kit, x+padding.left, y, height, element.gaps.column, columns, border.column);
+        drawHorizontals(kit, x, y+padding.top+grid.vertical, width, element.gaps.row, rows, border.row);
+        drawVerticals(kit, x+padding.left+grid.horizontal, y, height, element.gaps.column, columns, border.column);
 
-        x += padding.left + element.gaps.column/2;
-        y += padding.top + element.gaps.row/2;
-        width -= padding.left + padding.right + element.gaps.row;
-        height -= padding.top + padding.bottom + element.gaps.column;
+        x += padding.left + grid.horizontal;
+        y += padding.top + grid.vertical;
+        width -= padding.left + padding.right + 2*grid.horizontal;
+        height -= padding.top + padding.bottom + 2*grid.vertical;
 
         await gen.withProps(element.props, _=>element.render(this, x, y, width, height));
 

@@ -44,13 +44,14 @@ export const parseSpacing = createParser([
 export const parseColor = createParser([
     ["foreground|fore|font|text|stroke", (v, d)=>notNullString(v, d)],
     ["background|back", (v, d)=>notNullString(v, d)],
-    ["opacity", (v, d)=>notNullMinZeroNumber(v, d)]
+    ["opacity", (v, d)=>Math.min(1, minZeroNumber(v, d))]
 ]);
 
 export const parseBorder = createParser([
     ["weight", (v, d)=>minZeroNumber(v, d)],
     ["color", (v, d)=>notNullString(v, d)],
-    ["dash", (v, d)=>notNullMinZeroNumber(v, d)],
+    ["dash", (v, d)=>minZeroNumber(v, d)],
+    ["opacity", (v, d)=>Math.min(1, minZeroNumber(v, d, 1))]
 ]);
 
 //not defaultable
@@ -59,7 +60,7 @@ export const parseCell = createParser([
     ["min", (v, d)=>minZeroNumber(v, d)],
     ["max", (v, d, a, r)=>minNumber(r.min, v, d, Infinity) ],
     ["background|back", (v, d)=>notNullString(v, d)],
-    ["opacity", (v, d)=>notNullMinZeroNumber(v, d)]
+    ["opacity", (v, d)=>Math.min(1, minZeroNumber(v, d))]
 ]);
 
 export const parseCells = typize((v, d)=>(typeof v === "number" ? Array(v).fill("auto") : Array.jet.to(v, " ")).map(v=>parseCell(v, d)));

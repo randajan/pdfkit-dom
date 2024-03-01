@@ -25,6 +25,7 @@
     "lorem-ipsum": "^2.0.8"
   },
   "dependencies": {
+    "@randajan/jet-core": "^3.2.21",
     "esbuild-plugin-import-glob": "^0.1.1"
   },
   "files": [
