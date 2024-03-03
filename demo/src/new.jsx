@@ -23,9 +23,11 @@ for (let i=0; i<rowCount; i++) {
     row.push(<Lorem words={Math.round(Number.jet.rnd(2, 5))}/>);
 }
 
+const rgb = [{background:"red", opacity:.0}, {background:"green", opacity:.0}, {background:"blue", opacity:.0}];
+
 export const newContent = (
-    <grid columns={[{background:"red", opacity:.5}, {background:"green", opacity:.5}, {background:"yellow", opacity:.5}]} rows={[{background:"blue", opacity:.5}, {}]} margin="100" height="max" width="max" align="center middle" grid="5" border={{row:"1 white 10"}} padding="10">
-        {Array(9).fill(<img margin="5" src={img}/>)}
+    <grid columns={rgb} rows={rgb} margin="100" height="max" width="max" align="center middle" grid="5" padding="5 10" border={{row:"0", column:"0"}}>
+        {Array(9).fill(<div border="1 green" align="center middle" width="max" height="max">{loremIpsum({ count:Math.round(Number.jet.rnd(5, 20)), units:"words" })}</div>)}
     </grid>
     
 );

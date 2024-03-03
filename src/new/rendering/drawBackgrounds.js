@@ -9,7 +9,8 @@ const drawBackgrounds = (isVertical, kit, x, y, length, gap, stroke, list, propC
     for (let i=0; i<list.length; i++) {
         const size = list[i]+gap-stroke;
         drawBackground(kit, x, y, isVertical ? size : length, isVertical ? length : size, cells[i]?.background, cells[i]?.opacity);
-        if (isVertical) { x +=size+stroke; } else { y += size+stroke; }
+        const n = size+stroke;
+        if (isVertical) { x += n } else { y += n; }
     }
 
 }

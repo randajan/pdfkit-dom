@@ -6,7 +6,7 @@ export const vault = jet.vault();
 export const sides = ["top", "left", "right", "bottom"];
 
 export const notNull = (...src)=>{
-    for (const item of src) { if (item != null && item != "") { return item; } }
+    for (const item of src) { if (item != null && item !== "") { return item; } }
 }
 
 export const onNotNull = (on, ...src)=>{

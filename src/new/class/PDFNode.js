@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import { minZeroNumber, vault } from "../../helpers";
+import { minZeroNumber, sum, vault } from "../../helpers";
 import { PDFElement } from "./PDFElement";
 import { PDFTextNode } from "./PDFTextNode";
 import { drawBorders } from "../rendering/drawBorders";
@@ -156,13 +156,14 @@ export class PDFNode extends PDFTextNode {
         drawVerticalRects(kit, x+padding.left, y, height, gaps.column, column.weight, this.columns, props.columns);
 
         drawBorders(kit, x - left.weight, y - top.weight, width + left.weight + right.weight, height + top.weight + bottom.weight, border);
-        drawHorizontals(kit, x, y+padding.top+grid.vertical, width, gaps.row, rows, row);
-        drawVerticals(kit, x+padding.left+grid.horizontal, y, height, gaps.column, columns, column);
+        drawHorizontals(kit, x, y+padding.top+grid.horizontal, width, gaps.row, rows, row);
+        drawVerticals(kit, x+padding.left+grid.vertical, y, height, gaps.column, columns, column);
 
-        x += padding.left + grid.horizontal;
-        y += padding.top + grid.vertical;
-        width -= padding.left + padding.right + 2*grid.horizontal;
-        height -= padding.top + padding.bottom + 2*grid.vertical;
+
+        x += padding.left + grid.vertical;
+        y += padding.top + grid.horizontal;
+        width -= padding.left + padding.right + grid.vertical*2;
+        height -= padding.top + padding.bottom + grid.horizontal*2;
 
         await doc.withProps(props, _=>element.render(this, x, y, width, height));
 

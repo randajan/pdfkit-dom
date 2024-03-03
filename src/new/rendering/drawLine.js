@@ -1,9 +1,10 @@
+import { notNullMinZeroNumber } from "../../helpers";
 import { parseBorder } from "../parser/parsers";
 
 export const drawLine = (isVertical, kit, x, y, length, propBorder)=>{
     const border = parseBorder(propBorder);
     
-    if (!border.weight || border.color === "transparent") { return kit; }
+    if (!border.weight || border.color === "transparent" || border.opacity <= 0) { return kit; }
 
     kit.moveTo(x, y)
         .lineTo(isVertical ? x : x+length, isVertical ? y+length : y)
@@ -31,4 +32,3 @@ export const drawHorizontal = (kit, x, y, length, propBorder)=>{
 export const drawVertical = (kit, x, y, length, propBorder)=>{
     return drawLine(true, kit, x, y, length, propBorder);
 }
-

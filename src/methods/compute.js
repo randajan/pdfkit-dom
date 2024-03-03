@@ -11,11 +11,11 @@ export const computeGaps = (style = {} )=>{
         solid(gaps, side, margin[side]+border[side].weight+padding[side]);
     }
 
-    const row = border.row.weight ? horizontal*2+border.row.weight : horizontal;
-    const column = border.column.weight ? vertical*2+border.column.weight : vertical;
+    const row = 2*horizontal + border.row.weight;
+    const column = 2*vertical + border.column.weight;
 
-    const gapsRow = Math.max(0, row*Math.max(1, rows.length)-border.row.weight);
-    const gapsColumn = Math.max(0, column*Math.max(1, columns.length)-border.row.weight);
+    const gapsRow = 2*horizontal + Math.max(0, rows.length-1)*row;
+    const gapsColumn = 2*vertical + Math.max(0, columns.length-1)*column;
 
     return solid.all(gaps, {
         width:gaps.left+gaps.right+gapsColumn,
