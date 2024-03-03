@@ -32,19 +32,16 @@ const createOptions = (props, width, height)=>{
     return opt;
 }
 
-const setFactory = cb=>({set:(t, f)=>f != null ? f : cb(t)});
-
-
 export class PDFTextNode {
 
-    static create(gen, element, parent) {
-        return new PDFTextNode(gen, element, parent);
+    static create(doc, element, parent) {
+        return new PDFTextNode(doc, element, parent);
     }
 
-    constructor(gen, element, parent) {
+    constructor(doc, element, parent) {
 
         solid.all(this, {
-            gen,
+            doc,
             parent,
         }, false);
 
@@ -67,7 +64,7 @@ export class PDFTextNode {
 
     //STEP 2
     async setWidthRaw() {
-        const { kit, current } = vault.get(this.gen.uid);
+        const { kit, current } = vault.get(this.doc.uid);
         this._setWidthRaw(kit.widthOfString(this.element, createOptions(current[0].props)))
         return this.widthRaw;
     }
@@ -81,7 +78,7 @@ export class PDFTextNode {
 
     //STEP 4
     async setHeightRaw() {
-        const { kit, current } = vault.get(this.gen.uid);
+        const { kit, current } = vault.get(this.doc.uid);
         this._setHeightRaw(kit.heightOfString(this.element, createOptions(current[0].props, this.width)));
         return this.heightRaw;
     }
@@ -95,8 +92,8 @@ export class PDFTextNode {
 
     //STEP 6
     async render(x, y) {
-        const { kit, current } = vault.get(this.gen.uid);
-        const { gen, element } = this;
+        const { kit, current } = vault.get(this.doc.uid);
+        const { doc, element } = this;
         
         kit.text(element, x, y, createOptions(current[0].props, this.width, this.height));
 

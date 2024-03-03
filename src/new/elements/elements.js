@@ -29,10 +29,10 @@ const msgDef = (tagName, text, list)=>{
     return msg(tagName, text ? "define failed - " + text : "", list);
 }
 
-const validateOutput = (tagName, outputType, output)=>{
+const validateOutput = (defName, tagName, outputType, output)=>{
     if (!outputType) { return output; }
     if (jet.is(outputType, output)) { return output; }
-    throw Error(msg(tagName, "expected output type is " + outputType + "\n got " + output));
+    throw Error(msg(tagName, `expected output type of '${defName}' is '${outputType}'\n got ` + output));
 }
 
 export const elementDefine = (tagName, definition={})=>{
@@ -49,7 +49,7 @@ export const elementDefine = (tagName, definition={})=>{
     const mistype = _defsList.reduce((r, d)=>{
         const { type, output } = _defs[d], prop = definition[d];
         if (definition[d] != null && jet.is(definition[d], type)) { r.push(`${d} expect ${type}`); }
-        if (type === "function" && output) { definition[d] = async (...a)=>validateOutput(tagName, output, await prop(...a));}
+        if (type === "function" && output) { definition[d] = async (...a)=>validateOutput(d, tagName, output, await prop(...a));}
         return r;
     }, []);
 

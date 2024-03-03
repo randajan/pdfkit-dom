@@ -46,7 +46,8 @@ export const mapSides = callback=>{
 }
 
 export const flatArray = (srcArr, dstArr=[])=>{
-    if (!Array.isArray(srcArr)) { dstArr.push(srcArr); }
+    if (srcArr == null) {}
+    else if (!Array.isArray(srcArr)) { dstArr.push(srcArr); }
     else {
         for (const item of srcArr) { flatArray(item, dstArr); }
     }

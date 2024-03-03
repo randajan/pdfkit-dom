@@ -5,7 +5,6 @@ import { PDFNode } from "../../class/PDFNode";
 
 export const NodeConstructor = PDFNode;
 
-
 const getChild = (node, rowId, colId)=>node.getChildren(Number(rowId)*node.element.props.columns.length + Number(colId));
 const getCid = (node, childIndex)=>childIndex % node.element.props.columns.length;
 const getRid = (node, childIndex)=>Math.floor(childIndex / node.element.props.columns.length);

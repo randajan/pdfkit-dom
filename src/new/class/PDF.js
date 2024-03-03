@@ -49,6 +49,7 @@ export class PDF {
 
         solid.all(this, {
             uid,
+            kit,
             page:virtual.all({}, {
                 width:_=>minZeroNumber(kit.page.width),
                 height:_=>minZeroNumber(kit.page.height),

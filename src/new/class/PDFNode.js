@@ -1,11 +1,9 @@
 import jet from "@randajan/jet-core";
-import { flatArray, mapSides, minZeroNumber, vault } from "../../helpers";
+import { minZeroNumber, vault } from "../../helpers";
 import { PDFElement } from "./PDFElement";
 import { PDFTextNode } from "./PDFTextNode";
 import { drawBorders } from "../rendering/drawBorders";
 import { drawBackground } from "../rendering/drawBackground";
-import { parseBorders } from "../parser/parsers";
-import { drawHorizontal, drawVertical } from "../rendering/drawLine";
 import { drawHorizontals, drawVerticals } from "../rendering/drawLines";
 import { drawHorizontalRects, drawVerticalRects } from "../rendering/drawBackgrounds";
 
@@ -20,19 +18,19 @@ const frameSize = (num, propSize, maximaze=true, respectMin=true)=>{
 
 export class PDFNode extends PDFTextNode {
 
-    static create(gen, element, parent) {
-        if (PDFElement.is(element)) { return new element.NodeConstructor(gen, element, parent); }
-        return new PDFTextNode(gen, element, parent);
+    static create(doc, element, parent) {
+        if (PDFElement.is(element)) { return new element.NodeConstructor(doc, element, parent); }
+        return new PDFTextNode(doc, element, parent);
     }
 
-    constructor(gen, element, parent) {
-        super(gen, element, parent);
+    constructor(doc, element, parent) {
+        super(doc, element, parent);
         const { props } = element;
 
         const children = [];
 
         for (const child of props.children) {
-            children.push(PDFNode.create(gen, child, this));
+            children.push(PDFNode.create(doc, child, this));
         }
 
         virtual.all(this, {
@@ -109,39 +107,40 @@ export class PDFNode extends PDFTextNode {
 
     //STEP 2
     async setWidthRaw() {
-        const { gen, element } = this;
-        this._setWidthRaw(await gen.withProps(element.props, _=>element.setWidthRaw(this)));
+        const { doc, element } = this;
+        this._setWidthRaw(await doc.withProps(element.props, _=>element.setWidthRaw(this)));
         return this.widthRaw;
     }
 
     //STEP 3
     async setWidth(widthLimit) {
-        const { gen, element } = this;
+        const { doc, element } = this;
         this._setWidthLimit(widthLimit);
-        this._setWidthContent(await gen.withProps(element.props, _=>element.setWidthContent(this)));
+        this._setWidthContent(await doc.withProps(element.props, _=>element.setWidthContent(this)));
         return this.width;
     }
 
     //STEP 4
     async setHeightRaw() {
-        const { gen, element } = this;
-        this._setHeightRaw(await gen.withProps(element.props, _=>element.setHeightRaw(this)));
+        const { doc, element } = this;
+        this._setHeightRaw(await doc.withProps(element.props, _=>element.setHeightRaw(this)));
         return this.heightRaw;
     }
 
     //STEP 5
     async setHeight(heightLimit) {
-        const { gen, element } = this;
+        const { doc, element } = this;
         this._setHeightLimit(heightLimit);
-        this._setHeightContent(await gen.withProps(element.props, _=>element.setHeightContent(this)));
+        this._setHeightContent(await doc.withProps(element.props, _=>element.setHeightContent(this)));
         return this.height;
     }
 
     //STEP 6
     async render(x, y) {
-        const { gen, element, rows, columns } = this;
-        const { margin, border, padding, color, grid } = element.props;
-        const { kit } = vault.get(gen.uid);
+        const { doc, element, rows, columns } = this;
+        const { props, gaps } = element;
+        const { margin, border, padding, color, grid } = props;
+        const { kit } = doc;
 
         const { left, top, right, bottom, row, column } = border
 
@@ -153,19 +152,19 @@ export class PDFNode extends PDFTextNode {
         height -= margin.top + margin.bottom + top.weight + bottom.weight;
 
         drawBackground(kit, x, y, width, height, color.background, color.opacity);
-        drawHorizontalRects(kit, x, y+padding.top+grid.vertical, width, element.gaps.row, rows, element.props.rows);
-        drawVerticalRects(kit, x+padding.left+grid.horizontal, y, height, element.gaps.column, columns, element.props.columns);
+        drawHorizontalRects(kit, x, y+padding.top, width, gaps.row, row.weight, this.rows, props.rows);
+        drawVerticalRects(kit, x+padding.left, y, height, gaps.column, column.weight, this.columns, props.columns);
 
         drawBorders(kit, x - left.weight, y - top.weight, width + left.weight + right.weight, height + top.weight + bottom.weight, border);
-        drawHorizontals(kit, x, y+padding.top+grid.vertical, width, element.gaps.row, rows, border.row);
-        drawVerticals(kit, x+padding.left+grid.horizontal, y, height, element.gaps.column, columns, border.column);
+        drawHorizontals(kit, x, y+padding.top+grid.vertical, width, gaps.row, rows, row);
+        drawVerticals(kit, x+padding.left+grid.horizontal, y, height, gaps.column, columns, column);
 
         x += padding.left + grid.horizontal;
         y += padding.top + grid.vertical;
         width -= padding.left + padding.right + 2*grid.horizontal;
         height -= padding.top + padding.bottom + 2*grid.vertical;
 
-        await gen.withProps(element.props, _=>element.render(this, x, y, width, height));
+        await doc.withProps(props, _=>element.render(this, x, y, width, height));
 
     }
 }

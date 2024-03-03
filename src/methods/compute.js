@@ -28,7 +28,7 @@ export const computeAligns = (style = {})=>{
     const { horizontal, vertical, baseline } = style.align;
     return solid.all({}, {
         horizontal:horizontal === "right" ? 1 : horizontal === "center" ? .5 : 0,
-        vertical:vertical === "bottom" ? 1 : vertical === "middle" ? .5 : 0,
+        vertical:vertical === "bottom" ? 1 : vertical === "center" ? .5 : 0,
         baseline:baseline === "bottom" ? 1 : baseline === "middle" ? .5 : 0,
     })
 }

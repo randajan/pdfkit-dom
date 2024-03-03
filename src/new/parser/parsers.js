@@ -25,8 +25,8 @@ export const parseFont = createParser([
 ]);
 
 export const parseAlign = createParser([
-    ["horizontal|x", enumFactory(["center", "right", "justify"], (v, d)=>v || d || "left")],
-    ["vertical|y", enumFactory(["middle", "bottom"], (v, d)=>v || d || "top")],
+    ["horizontal|x", enumFactory(["center", "middle", "right", "justify"], (v, d)=>v ? v !== "middle" ? v : "center" : (d || "left"))],
+    ["vertical|y", enumFactory(["center", "middle", "bottom"], (v, d)=>v ? v !== "middle" ? v : "center" : (d || "top"))],
     ["baseline", enumFactory(["top", "bottom", "middle", "alphabetic", "hanging"], (v, d)=>v || d || "common")]
 ]);
 
@@ -44,14 +44,14 @@ export const parseSpacing = createParser([
 export const parseColor = createParser([
     ["foreground|fore|font|text|stroke", (v, d)=>notNullString(v, d)],
     ["background|back", (v, d)=>notNullString(v, d)],
-    ["opacity", (v, d)=>Math.min(1, minZeroNumber(v, d))]
+    ["opacity", (v, d)=>Math.min(1, notNullMinZeroNumber(v, d, 1))]
 ]);
 
 export const parseBorder = createParser([
     ["weight", (v, d)=>minZeroNumber(v, d)],
     ["color", (v, d)=>notNullString(v, d)],
     ["dash", (v, d)=>minZeroNumber(v, d)],
-    ["opacity", (v, d)=>Math.min(1, minZeroNumber(v, d, 1))]
+    ["opacity", (v, d)=>Math.min(1, notNullMinZeroNumber(v, d, 1))]
 ]);
 
 //not defaultable
@@ -60,8 +60,10 @@ export const parseCell = createParser([
     ["min", (v, d)=>minZeroNumber(v, d)],
     ["max", (v, d, a, r)=>minNumber(r.min, v, d, Infinity) ],
     ["background|back", (v, d)=>notNullString(v, d)],
-    ["opacity", (v, d)=>Math.min(1, minZeroNumber(v, d))]
+    ["opacity", (v, d)=>Math.min(1, notNullMinZeroNumber(v, d, 1))]
 ]);
+
+export const parseObjectFit = enumFactory(["stretch", "fit", "cover"], (v, d)=>v || d || "fit");
 
 export const parseCells = typize((v, d)=>(typeof v === "number" ? Array(v).fill("auto") : Array.jet.to(v, " ")).map(v=>parseCell(v, d)));
 export const parseRows = parseCells;
@@ -84,7 +86,7 @@ export const parseProps = typize((v, defs)=>{
     v = v || {};
 
     const {
-        width, height, grid,
+        width, height, grid, objectFit,
         font, margin, padding, border, align, color,
         spacing, link, lineBreak, ellipsis, paging,
     } = v;
@@ -111,6 +113,7 @@ export const parseProps = typize((v, defs)=>{
         padding:parseSide(padding, defs?.padding),
         border:parseBorders(border, defs?.border),
         align:parseAlign(align, defs?.align),
+        objectFit:parseObjectFit(objectFit, defs?.objectFit),
         rows,
         columns,
         children
