@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import { notNullNumber, notNullMinZeroNumber, notNullString, minZeroNumber, enumFactory, flatArray, minNumber, typize, notNullBoolean, notNull, fitArray } from "../../helpers";
+import { notNullNumber, notNullMinZeroNumber, notNullString, minZeroNumber, enumFactory, flatArray, minNumber, typize, notNullBoolean, notNull, fitArray } from "../helpers";
 import { createParser } from "./parserFactory";
 
 const { solid } = jet.prop;

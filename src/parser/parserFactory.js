@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import { typize } from "../../helpers";
+import { typize } from "../helpers";
 
 const { solid } = jet.prop;
 

@@ -1,4 +1,4 @@
-import { notNullMinZeroNumber } from "../../helpers";
+import { notNullMinZeroNumber } from "../helpers";
 import { parseBorder } from "../parser/parsers";
 
 export const drawLine = (isVertical, kit, x, y, length, propBorder)=>{

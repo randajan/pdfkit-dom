@@ -1,8 +1,8 @@
 import jet from "@randajan/jet-core";
-import { flatArray } from "../../helpers";
+import { flatArray } from "../helpers";
 import { elementPick } from "../elements/elements";
 import { parseProps } from "../parser/parsers";
-import { computeAligns, computeGaps } from "../../methods/compute";
+import { computeAligns, computeGaps } from "../compute";
 import { PDFNode } from "./PDFNode";
 
 const { solid, cached, virtual } = jet.prop;

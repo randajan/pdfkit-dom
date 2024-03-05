@@ -1,20 +1,10 @@
-import PDFGenerator from "./class/Generator";
-import PDFElement from "./class/Element";
-import { PDFElementText } from "./elements/text";
-import { PDFElementGrid } from "./elements/grid";
-import { PDFElementSVG } from "./elements/svg";
-import { PDF } from "./new/class/PDF.js";
+import { PDF } from "./class/PDF.js";
 
-import "./new/elements/loadDefault.js";
+import "./elements/loadDefault.js";
 
 
 export {
-    PDFGenerator,
-    PDFElement,
-    PDFElementText,
-    PDFElementGrid,
-    PDFElementSVG,
     PDF
 }
 
-export default options=>new PDFGenerator(options);
+export default PDF;

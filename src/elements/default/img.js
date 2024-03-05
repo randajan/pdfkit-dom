@@ -25,7 +25,7 @@ export const setWidthRaw = (node)=>{
 };
 
 export const setWidthContent = (node)=>{
-    return Math.min(node.widthContentLimit, node.widthRaw);
+    return Math.min(node.widthPadLimit, node.widthRaw);
 };
     
 export const setHeightRaw = node=>{
@@ -34,22 +34,22 @@ export const setHeightRaw = node=>{
 };
 
 export const setHeightContent = node=>{
-    return Math.min(node.heightContentLimit, node.heightRaw);
+    return Math.min(node.heightPadLimit, node.heightRaw);
 };
 
 export const render = async (node, x, y)=>{
-    const { doc, heightContent, widthContent, element } = node;
+    const { doc, heightPad, widthPad, element } = node;
     const { props:{ align, objectFit, src } } = element;
 
     const opt = {
-        width:widthContent,
-        height:heightContent,
+        width:widthPad,
+        height:heightPad,
         align:align.horizontal,
         valign:align.vertical
     }
 
     if (objectFit == "cover" || objectFit == "fit") {
-        opt[objectFit] = [widthContent, heightContent];
+        opt[objectFit] = [widthPad, heightPad];
     }
 
     if (element.src.type === "svg") {

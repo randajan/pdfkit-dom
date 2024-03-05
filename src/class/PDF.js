@@ -1,7 +1,7 @@
 import jet from "@randajan/jet-core";
 import PDFKit from "pdfkit";
 
-import { minZeroNumber, vault } from "../../helpers";
+import { minZeroNumber, vault } from "../helpers";
 
 import { PDFElement } from "./PDFElement";
 import { parseProps } from "../parser/parsers";

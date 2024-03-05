@@ -20,6 +20,8 @@ yarn add @randajan/pdfkit-dom
 I hope i will had time to describe this package.
 Meanwhile check demo folder.
 
+This major version doesn't support multipage PDF
+
 ## License
 
 MIT © [randajan](https://github.com/randajan)

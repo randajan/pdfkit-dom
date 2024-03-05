@@ -1,7 +1,7 @@
 import jet from "@randajan/jet-core";
-import { notNullMinZeroNumber, vault } from "../helpers";
+import { notNullMinZeroNumber, vault } from "../../helpers";
 import { parseStyle } from "../methods/styleParser";
-import { computeAligns, computeContent, computeGaps } from "../methods/compute";
+import { computeAligns, computeContent, computeGaps } from "../../compute";
 
 const { solid, safe, cached, virtual } = jet.prop;
 

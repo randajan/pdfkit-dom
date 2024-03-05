@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import { minZeroNumber, sum, vault } from "../../helpers";
+import { minZeroNumber, sum, vault } from "../helpers";
 import { PDFElement } from "./PDFElement";
 import { PDFTextNode } from "./PDFTextNode";
 import { drawBorders } from "../rendering/drawBorders";
@@ -65,13 +65,14 @@ export class PDFNode extends PDFTextNode {
     _setWidthLimit(widthLimit) {
         const { gaps, props:{ width } } = this.element;
         super._setWidthLimit(frameSize(widthLimit, width, false, false));
-        solid(this, "widthContentLimit", minZeroNumber(this.widthLimit-gaps.width));
+        solid(this, "widthPadLimit", minZeroNumber(this.widthLimit-gaps.width));
     }
 
-    _setWidthContent(widthContent) {
+    _setWidthContent(widthPad) {
         const { gaps, props:{ width } } = this.element;
-        super._setWidth(frameSize(widthContent+gaps.width, width));
-        solid(this, "widthContent", minZeroNumber(this.width-gaps.width));
+        super._setWidth(frameSize(widthPad+gaps.width, width));
+        solid(this, "widthContent", minZeroNumber(frameSize(widthPad+gaps.width, width, false, false)-gaps.width));
+        solid(this, "widthPad", minZeroNumber(this.width-gaps.width));
     }
 
     _setHeightRaw(heightRaw) {
@@ -82,13 +83,14 @@ export class PDFNode extends PDFTextNode {
     _setHeightLimit(heightLimit) {
         const { gaps, props:{ height} } = this.element;
         super._setHeightLimit(frameSize(heightLimit, height, false, false));
-        solid(this, "heightContentLimit", minZeroNumber(this.heightLimit-gaps.height));
+        solid(this, "heightPadLimit", minZeroNumber(this.heightLimit-gaps.height));
     }
 
-    _setHeightContent(heightContent) {
+    _setHeightContent(heightPad) {
         const { gaps, props:{ height } } = this.element;
-        super._setHeight(frameSize(heightContent+gaps.height, height));
-        solid(this, "heightContent", minZeroNumber(this.height-gaps.height));
+        super._setHeight(frameSize(heightPad+gaps.height, height));
+        solid(this, "heightContent", minZeroNumber(frameSize(heightPad+gaps.height, height, false, false)-gaps.height));
+        solid(this, "heightPad", minZeroNumber(this.height-gaps.height));
     }
 
     async reduceMax(getValueFromChild) {

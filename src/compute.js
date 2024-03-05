@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import { sides } from "../helpers";
+import { sides } from "./helpers";
 
 const { solid, safe, cached, virtual } = jet.prop;
 

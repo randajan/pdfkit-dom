@@ -1,6 +1,5 @@
-import { sum, vault } from "../../../helpers";
+import { sum } from "../../helpers";
 import { getSizing } from "../../sizing/getSizing";
-import { computeGaps as cg } from "../../../methods/compute";
 import { PDFNode } from "../../class/PDFNode";
 
 export const NodeConstructor = PDFNode;
@@ -37,7 +36,7 @@ export const setWidthRaw = async (node)=>{
 export const setWidthContent = async (node)=>{
     const { width, rows, columns } = node.element.props;
 
-    const sizing = getSizing(node.widthContentLimit, width, columns, cid=>{
+    const sizing = getSizing(node.widthPadLimit, width, columns, cid=>{
         return rows.reduce((v, r, rid)=>Math.max(v, getChild(node, rid, cid)?.widthRaw), 0);
     });
 
@@ -67,7 +66,7 @@ export const setHeightContent = async node=>{
 
     const total = [];
 
-    const sizing = getSizing(node.heightContentLimit, height, rows, rid=>{
+    const sizing = getSizing(node.heightPadLimit, height, rows, rid=>{
         return columns.reduce((v, r, cid)=>Math.max(v, getChild(node, rid, cid)?.heightRaw), 0);
     });
 

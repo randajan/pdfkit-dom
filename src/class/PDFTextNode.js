@@ -1,6 +1,6 @@
 import jet from "@randajan/jet-core";
 import { PDFElement } from "./PDFElement";
-import { flatArray, minZeroNumber, vault } from "../../helpers";
+import { flatArray, minZeroNumber, vault } from "../helpers";
 
 const { solid, virtual, cached, safe } = jet.prop;
 

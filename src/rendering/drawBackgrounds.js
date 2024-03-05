@@ -1,4 +1,4 @@
-import { fitArray } from "../../helpers";
+import { fitArray } from "../helpers";
 import { parseCells } from "../parser/parsers";
 import { drawBackground } from "./drawBackground";
 
