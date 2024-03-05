@@ -104,16 +104,21 @@ export class PDF {
         await node.setHeight(height);
         await node.render(0, 0);
 
-        new Promise((res, rej)=>{
-            _p.kit.on("end", _=>{
+        const prom = new Promise((res, rej)=>{
+            _p.kit.on("finish", _=>{
                 _p.state = "done";
                 res();
+            })
+            _p.kit.on("error", e=>{
+                rej(e);
             });
         });
 
         _p.kit.end();
 
         vault.end(this.uid);
+
+        await prom;
     }
 
 }
