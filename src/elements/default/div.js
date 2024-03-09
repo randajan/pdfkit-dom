@@ -2,7 +2,7 @@ import { PDFNode } from "../../class/PDFNode";
 
 export const NodeConstructor = PDFNode;
 
-export const defaultProps = {
+export const defaultStyle = {
 
 };
 

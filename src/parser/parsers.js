@@ -4,58 +4,51 @@ import { createParser } from "./parserFactory";
 
 const { solid } = jet.prop;
 
-export const parseSize = createParser([
-    ["main|current|target", enumFactory(["min", "max"], (v, d, a)=>v ? v : (minZeroNumber(a[0]) || d || "min"))],
+const parseSize = createParser([
+    ["", enumFactory(["min", "max"], (v, d, a)=>v ? v : (minZeroNumber(a[0]) || d || "min"))],
     ["min", (v, d)=>minZeroNumber(v, d)],
     ["max", (v, d, a, r)=>minNumber(r.min, v, d, Infinity) ],
 ]);
 
-export const parseSide = createParser([
+const parseSide = createParser([
     ["top|horizontal", (v, d)=>minZeroNumber(v, d)],
     ["right|vertical", (v, d, a)=>minZeroNumber(v, a[0], d)],
     ["bottom|horizontal", (v, d, a)=>minZeroNumber(v, a[0], d)],
     ["left|vertical", (v, d, a)=>minZeroNumber(v, a[1], a[0], d)],
 ]);
 
-export const parseFont = createParser([
+const parseFont = createParser([
     ["size", (v, d)=>notNullMinZeroNumber(v, d)],
     ["family", (v, d)=>notNullString(v, d)],
     ["italic|oblique", enumFactory(["true", "italic", "oblique"], (v, d, a)=>v ? true : notNull(notNullMinZeroNumber(a[2]), d))],
     ["underline", enumFactory(["true", "underline"], (v, d, a)=>v ? true : notNullBoolean(a[3], d))]
 ]);
 
-export const parseAlign = createParser([
+const parseAlign = createParser([
     ["horizontal|x", enumFactory(["center", "middle", "right", "justify"], (v, d)=>v ? v !== "middle" ? v : "center" : (d || "left"))],
     ["vertical|y", enumFactory(["center", "middle", "bottom"], (v, d)=>v ? v !== "middle" ? v : "center" : (d || "top"))],
     ["baseline", enumFactory(["top", "bottom", "middle", "alphabetic", "hanging"], (v, d)=>v || d || "common")]
 ]);
 
-export const parseGrid = createParser([
+const parseGrid = createParser([
     ["horizontal|x", (v, d)=>minZeroNumber(v, d)],
     ["vertical|y", (v, d, a)=>minZeroNumber(v, a[0], d)],
 ]);
 
-export const parseSpacing = createParser([
+const parseSpacing = createParser([
     ["line", (v, d)=>notNullNumber(v, d)],
     ["word", (v, d)=>notNullNumber(v, d)],
     ["character|char", (v, d)=>notNullNumber(v, d)]
 ]);
 
-export const parseColor = createParser([
+const parseColor = createParser([
     ["foreground|fore|font|text|stroke", (v, d)=>notNullString(v, d)],
-    ["background|back", (v, d)=>notNullString(v, d)],
-    ["opacity", (v, d)=>Math.min(1, notNullMinZeroNumber(v, d, 1))]
-]);
-
-export const parseBorder = createParser([
-    ["weight", (v, d)=>minZeroNumber(v, d)],
-    ["color", (v, d)=>notNullString(v, d)],
-    ["dash", (v, d)=>minZeroNumber(v, d)],
+    ["background|back|bg", (v, d)=>notNullString(v, d)],
     ["opacity", (v, d)=>Math.min(1, notNullMinZeroNumber(v, d, 1))]
 ]);
 
 //not defaultable
-export const parseCell = createParser([
+const parseCell = createParser([
     ["main|current|target", enumFactory(["min", "max"], (v, d, a)=>v ? v : (minZeroNumber(a[0]) || d || "min"))],
     ["min", (v, d)=>minZeroNumber(v, d)],
     ["max", (v, d, a, r)=>minNumber(r.min, v, d, Infinity) ],
@@ -63,60 +56,98 @@ export const parseCell = createParser([
     ["opacity", (v, d)=>Math.min(1, notNullMinZeroNumber(v, d, 1))]
 ]);
 
-export const parseObjectFit = enumFactory(["stretch", "fit", "cover"], (v, d)=>v || d || "fit");
+const parseObjectFit = enumFactory(["stretch", "fit", "cover"], (v, d)=>v || d || "fit");
 
-export const parseCells = typize((v, d)=>(typeof v === "number" ? Array(v).fill("auto") : Array.jet.to(v, " ")).map(v=>parseCell(v, d)));
-export const parseRows = parseCells;
-export const parseColumns = parseCells;
+const parseCells = typize((v, d)=>(typeof v === "number" ? Array(v).fill("auto") : Array.jet.to(v, " ")).map(v=>parseCell(v, d)));
+const parseRows = parseCells;
+const parseColumns = parseCells;
 
-export const parseBorders = typize((v, d)=>{
-    if (!Object.jet.is(v)) { v = {all:v}; }
+const createParserBorder = (...nss)=>{
+    const atrs = [
+        [[], (v, d)=>minZeroNumber(v, d)],
+        [[], (v, d)=>notNullString(v, d)],
+        [[], (v, d)=>minZeroNumber(v, d)],
+        [[], (v, d)=>Math.min(1, notNullMinZeroNumber(v, d, 1))]
+    ];
 
-    return solid.all({}, {
-        top:parseBorder(v.all || v.top || v.horizontal || v.outer, d?.top),
-        right:parseBorder(v.all || v.right || v.vertical || v.outer, d?.right),
-        bottom:parseBorder(v.all || v.bottom || v.horizontal || v.outer, d?.bottom),
-        left:parseBorder(v.all || v.left || v.vertical || v.outer, d?.left),
-        row:parseBorder(v.all || v.row || v.horizontal || v.inner, d?.row),
-        column:parseBorder(v.all || v.column || v.vertical || v.inner, d?.column),
-    });
-});
+    for (let ns of nss) {
+        atrs[0][0].push(ns+"Weight");
+        atrs[1][0].push(ns+"Color");
+        atrs[2][0].push(ns+"Dash");
+        atrs[3][0].push(ns+"Opacity");
+    }
 
-export const parseProps = typize((v, defs)=>{
-    v = v || {};
 
-    const {
-        width, height, grid, objectFit,
-        font, margin, padding, border, align, color,
-        spacing, link, lineBreak, ellipsis, paging,
-    } = v;
 
-    const children = flatArray(v.children || defs?.children);
-    const columns = parseColumns(v.columns, defs?.columns);
-    const prerows = parseRows(v.rows, defs?.rows);
+    return createParser(atrs);
+};
+
+const parseBorder = createParserBorder("");
+const parseBorderHorizontal = createParserBorder("horizontal", "");
+const parseBorderVertical = createParserBorder("vertical", "");
+const parseBorderInner = createParserBorder("inner", "");
+const parseBorderOuter = createParserBorder("outer", "");
+
+const parseBorderTop = createParserBorder("top", "horizontal", "outer", "");
+const parseBorderRight = createParserBorder("right", "vertical", "outer", "");
+const parseBorderBottom = createParserBorder("bottom", "horizontal", "outer", "");
+const parseBorderLeft = createParserBorder("left", "vertical", "outer", "");
+const parseBorderRow = createParserBorder("row", "horizontal", "inner", "");
+const parseBorderColumn = createParserBorder("column", "vertical", "inner", "");
+
+const parseBorders = (ns, to, from, defs)=>{
+    const pre = {...from};
+
+    parseBorder("border", pre, pre);
+    parseBorderHorizontal("border", pre, pre);
+    parseBorderVertical("border", pre, pre);
+    parseBorderInner("border", pre, pre);
+    parseBorderOuter("border", pre, pre);
+
+    parseBorderTop("border", to, pre, defs);
+    parseBorderRight("border", to, pre, defs);
+    parseBorderBottom("border", to, pre, defs);
+    parseBorderLeft("border", to, pre, defs);
+    parseBorderRow("border", to, pre, defs);
+    parseBorderColumn("border", to, pre, defs);
+};
+
+const _namespaced = {
+    color:parseColor,
+    spacing:parseSpacing,
+    grid:parseGrid,
+    width:parseSize,
+    height:parseSize,
+    font:parseFont,
+    margin:parseSide,
+    padding:parseSide,
+    align:parseAlign,
+    borders:parseBorders
+}
+
+export const parseStyle = typize((style, defs)=>{
+    const sf = Object.jet.to(style);
+    const st = {};
+    
+    const { objectFit, link, lineBreak, ellipsis, paging, childrenCount } = sf;
+
+    const columns = parseColumns(sf.columns, defs?.columns);
+    const prerows = parseRows(sf.rows, defs?.rows);
     if (columns.length && !prerows.length) { prerows.push(parseCell()); }
-    const rows = !columns.length ? prerows : fitArray(prerows, Math.ceil(children.length / columns.length));
+    const rows = !columns.length ? prerows : fitArray(prerows, Math.ceil(childrenCount / columns.length));
 
-    return solid.all({}, {
-        ...v,
-        color:parseColor(color, defs?.color),
+    for (let ns in _namespaced) { _namespaced[ns](ns, st, sf, defs); }
+
+    return solid.all(st, {
         link:notNullString(link, defs?.link),
         lineBreak:notNullBoolean(lineBreak, defs?.lineBreak, true),
         paging:notNullBoolean(paging, defs?.paging, true),
         ellipsis:notNullString(ellipsis, defs?.ellipsis),
-        spacing:parseSpacing(spacing, defs?.spacing),
-        grid:parseGrid(grid, defs?.grid),
-        width:parseSize(width, defs?.width),
-        height:parseSize(height, defs?.height),
-        font:parseFont(font, defs?.font),
-        margin:parseSide(margin, defs?.margin),
-        padding:parseSide(padding, defs?.padding),
-        border:parseBorders(border, defs?.border),
-        align:parseAlign(align, defs?.align),
         objectFit:parseObjectFit(objectFit, defs?.objectFit),
         rows,
         columns,
-        children
     });
 
-})
+});
+
+console.log(parseStyle({ border:"1 green", borderInner:"1 blue", align:"center middle", width:"max" }));

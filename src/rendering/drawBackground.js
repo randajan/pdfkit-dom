@@ -1,4 +1,3 @@
-import { parseColor } from "../parser/parsers";
 
 export const drawBackground = (kit, x, y, width, height, fillColor, opacity)=>{
     if (!fillColor || fillColor === "transparent" || opacity <= 0) { return; }

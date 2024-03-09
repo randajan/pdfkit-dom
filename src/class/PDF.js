@@ -4,7 +4,6 @@ import PDFKit from "pdfkit";
 import { minZeroNumber, vault } from "../helpers";
 
 import { PDFElement } from "./PDFElement";
-import { parseProps } from "../parser/parsers";
 import { PDFNode } from "./PDFNode";
 import { elementDefine } from "../elements/elements";
 
@@ -63,17 +62,15 @@ export class PDF {
         return "PDF " + text;
     }
 
-    async withProps(props, callback) {
+    async withStyle(style, callback) {
         const { kit, current } = vault.get(this.uid);
-
-        const s = props = parseProps(props);
         let c = { ...current[0].inherit };
 
-        if (s.font.size) { c.fontSize = s.font.size; }
-        if (s.font.family) { c.fontFamily = s.font.family; }
-        if (s.color.foreground) { c.fillColor = s.color.foreground; }
+        if (style.font.size) { c.fontSize = style.font.size; }
+        if (style.font.family) { c.fontFamily = style.font.family; }
+        if (style.color.foreground) { c.fillColor = style.color.foreground; }
 
-        current.unshift({props, inherit:c});
+        current.unshift({style, inherit:c});
         
         kit.font(c.fontFamily, c.fontSize).fillColor(c.fillColor);
         const result = await callback(this);

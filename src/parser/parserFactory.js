@@ -3,35 +3,40 @@ import { typize } from "../helpers";
 
 const { solid } = jet.prop;
 
-export const createParser = props=>{
+const toArray = v=>typeof v === "number" ? [v] : Array.jet.to(v, " ");
+
+export const createParser = (atrs)=>{
     
-    //format props
-    for (const prop of props) {
-        const keys = prop[3] = prop[0].split("|");
-        prop[0] = keys[0]; //set name
-        prop[2] = blob=>{
-            if (keys.length === 1) { return blob[keys[0]]; }
-            for (const key of keys) {
-                if (blob[key] != null) { return blob[key]; }
+    //format atrs
+    for (const atr of atrs) {
+        const keys = Array.jet.to(atr[0], "|").map(key=>String.jet.capitalize(key));
+        const name = atr[0] = keys[0]; //set name
+
+        if (!name) {
+            atr[2] = ()=>{};
+        } else if (keys.length === 1) { 
+            atr[2] = (ns, from)=>from[ns+name];
+        } else {
+            atr[2] = (ns, from)=>{
+                for (const key of keys) {
+                    if (from[ns+key] != null) { return from[ns+key]; }
+                }
             }
         }
+
     }
 
-    const parser = typize((input, defs)=>{
-        const isObj = Object.jet.is(input);
-        const arr = isObj ? [] : Array.jet.to(input, " ");
+    return (ns, to, from, defs)=>{
+        const arr = toArray(from[ns]);
 
-        const r = {};
-        for (let i in props) {
-            const [name, parse, retrieve, aliases] = props[i];
-            const value = isObj ? retrieve(input) : arr[i];
-            const d = defs ? defs[name] : undefined;
-            solid(r, name, parse(value, d, arr, r));
+        for (let i in atrs) {
+            const [name, parse, retrieve] = atrs[i];
+            const value = retrieve(ns, from);
+            const def = defs ? defs[name] : undefined;
+            solid(to, ns+name, parse(value != null ? value : arr[i], def, arr, to));
         }
-        
-        return r;
-    });
 
-    return parser;
+        return to;
+    };
 
 };

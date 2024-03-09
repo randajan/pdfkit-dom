@@ -1,9 +1,8 @@
 import jet from "@randajan/jet-core";
 import { flatArray } from "../helpers";
 import { elementPick } from "../elements/elements";
-import { parseProps } from "../parser/parsers";
+import { parseStyle } from "../parser/parsers";
 import { computeAligns, computeGaps } from "../compute";
-import { PDFNode } from "./PDFNode";
 
 const { solid, cached, virtual } = jet.prop;
 
@@ -28,16 +27,21 @@ export class PDFElement {
 
     constructor(tagName, props={}) {
         const def = elementPick(tagName);
-        props = parseProps(props, def.defaultProps);
+        props = Object.jet.to(props);
+        props.children = flatArray(props.children);
 
         solid.all(this, {
             tagName,
             props,
         });
 
+        props.style = Object.jet.to(props.style);
+        props.style.childrenCount = props.children.length;
+
         cached.all(this, {}, {
-            gaps:_=>computeGaps(props),
-            aligns:_=>computeAligns(props),
+            style:_=>parseStyle(props.style, def.defaultStyle),
+            gaps:_=>computeGaps(this.style),
+            aligns:_=>computeAligns(this.style),
         });
 
         solid.all(this, def, false);

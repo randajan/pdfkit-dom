@@ -1,6 +1,6 @@
 import jet from "@randajan/jet-core";
 
-import { parseProps } from "./../parser/parsers";
+import { parseStyle } from "./../parser/parsers";
 import { PDFNode } from "../class/PDFNode";
 
 
@@ -8,7 +8,7 @@ const _elements = {};
 const _defs = {
     "validate":{ type:"function" },
     "NodeConstructor":{ type:PDFNode, isRequired:true },
-    "defaultProps":{ type:"object", isRequired:false, transform:parseProps, output:"object" },
+    "defaultStyle":{ type:"object", isRequired:false, transform:parseStyle, output:"object" },
     "setWidthRaw":{ type:"function", isRequired:true, output:"number" },
     "setWidthContent":{ type:"function", isRequired:true, output:"number" },
     "setHeightRaw":{ type:"function", isRequired:true, output:"number" },

@@ -1,10 +1,7 @@
-import { parseBorder} from "../parser/parsers";
 import { drawLine } from "./drawLine";
 
-const drawLines = (isVertical, kit, x, y, length, gap, list, propBorder)=>{
+const drawLines = (isVertical, kit, x, y, length, gap, list, border)=>{
     if (!Array.isArray(list)) { return; }
-
-    const border = parseBorder(propBorder);
 
     if (!border.weight || border.color === "transparent") { return; }
 

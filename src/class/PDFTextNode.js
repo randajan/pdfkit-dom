@@ -10,11 +10,11 @@ const _minSize = {
     width:1 //rendered box is without this sometime too small and it will create another row
 }
 
-const createOptions = (props, width, height)=>{
+const createOptions = (style, width, height)=>{
     let opt;
 
-    if (!props) { opt = {} } else {
-        const { align, font, spacing, link, lineBreak, ellipsis } = props;
+    if (!style) { opt = {} } else {
+        const { align, font, spacing, link, lineBreak, ellipsis } = style;
 
         opt = {
             align:align.horizontal, baseline:align.baseline,
@@ -27,7 +27,7 @@ const createOptions = (props, width, height)=>{
     if (width != null) { opt.width = _minSize.width+minZeroNumber(width); }
     if (height != null) { opt.height = _minSize.height+minZeroNumber(height); }
 
-    //if (props && opt.width != null && opt.height != null) { opt.width -= gaps.column*(columns-1); }
+    //if (style && opt.width != null && opt.height != null) { opt.width -= gaps.column*(columns-1); }
 
     return opt;
 }
@@ -65,7 +65,7 @@ export class PDFTextNode {
     //STEP 2
     async setWidthRaw() {
         const { kit, current } = vault.get(this.doc.uid);
-        this._setWidthRaw(kit.widthOfString(this.element, createOptions(current[0].props)))
+        this._setWidthRaw(kit.widthOfString(this.element, createOptions(current[0].style)))
         return this.widthRaw;
     }
 
@@ -79,7 +79,7 @@ export class PDFTextNode {
     //STEP 4
     async setHeightRaw() {
         const { kit, current } = vault.get(this.doc.uid);
-        this._setHeightRaw(kit.heightOfString(this.element, createOptions(current[0].props, this.width)));
+        this._setHeightRaw(kit.heightOfString(this.element, createOptions(current[0].style, this.width)));
         return this.heightRaw;
     }
 
@@ -95,7 +95,7 @@ export class PDFTextNode {
         const { kit, current } = vault.get(this.doc.uid);
         const { doc, element } = this;
         
-        kit.text(element, x, y, createOptions(current[0].props, this.width, this.height));
+        kit.text(element, x, y, createOptions(current[0].style, this.width, this.height));
 
     }
 }

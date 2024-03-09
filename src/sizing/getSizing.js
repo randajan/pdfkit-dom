@@ -1,15 +1,12 @@
 import { Allocator } from "./Allocator";
 
 import jet from "@randajan/jet-core";
-import { parseSize, parseCells } from "../parser/parsers";
 
 const _zones = ["min", "set", "req", "ext"];
 
 const rawSizeCollector = (current, cell)=>current+cell.sizeRaw;
 
 const allocate = (size, sizes, getRawSize)=>{
-    size  = parseSize(size);
-    sizes = parseCells(sizes);
 
     const allocator = new Allocator(_zones); 
     

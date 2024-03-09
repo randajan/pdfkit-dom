@@ -1,6 +1,6 @@
 import jet from "@randajan/jet-core";
 
-const { solid, virtual, safe, cached } = jet.prop;
+const { solid } = jet.prop;
 
 export class Allocator {
     constructor(kinds) {

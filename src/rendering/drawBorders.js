@@ -1,8 +1,6 @@
-import { parseBorders } from "../parser/parsers";
 import { drawHorizontal, drawVertical } from "./drawLine";
 
-export const drawBorders = (kit, x, y, width, height, propBorders)=>{
-    const border = parseBorders(propBorders);
+export const drawBorders = (kit, x, y, width, height, border)=>{
 
     const w = {};
     for (let i in border) { w[i] = border[i].weight/2; }

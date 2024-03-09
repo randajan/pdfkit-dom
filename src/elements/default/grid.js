@@ -4,18 +4,18 @@ import { PDFNode } from "../../class/PDFNode";
 
 export const NodeConstructor = PDFNode;
 
-const getChild = (node, rowId, colId)=>node.getChildren(Number(rowId)*node.element.props.columns.length + Number(colId));
-const getCid = (node, childIndex)=>childIndex % node.element.props.columns.length;
-const getRid = (node, childIndex)=>Math.floor(childIndex / node.element.props.columns.length);
+const getChild = (node, rowId, colId)=>node.getChildren(Number(rowId)*node.element.style.columns.length + Number(colId));
+const getCid = (node, childIndex)=>childIndex % node.element.style.columns.length;
+const getRid = (node, childIndex)=>Math.floor(childIndex / node.element.style.columns.length);
 const getCdr = (node, childIndex)=>[ getRid(node, childIndex), getCid(node, childIndex) ];
 
 
-export const defaultProps = {
+export const defaultStyle = {
     border:"1 black"
 };
 
 export const validate = node=>{
-    const { columns } = node.element.props;
+    const { columns } = node.element.style;
     
     if (columns.length) { return; }
     throw Error(`Grid requires columns to be set`);
@@ -34,7 +34,7 @@ export const setWidthRaw = async (node)=>{
 };
 
 export const setWidthContent = async (node)=>{
-    const { width, rows, columns } = node.element.props;
+    const { width, rows, columns } = node.element.style;
 
     const sizing = getSizing(node.widthPadLimit, width, columns, cid=>{
         return rows.reduce((v, r, rid)=>Math.max(v, getChild(node, rid, cid)?.widthRaw), 0);
@@ -62,7 +62,7 @@ export const setHeightRaw = async node=>{
 };
 
 export const setHeightContent = async node=>{
-    const { height, rows, columns } = node.element.props;
+    const { height, rows, columns } = node.element.style;
 
     const total = [];
 

@@ -7,7 +7,7 @@ const _acceptTypes = ["png", "jpg", "svg"];
 
 export const NodeConstructor = PDFNode;
 
-export const defaultProps = {
+export const defaultStyle = {
     align:"center center"
 };
 
@@ -39,7 +39,7 @@ export const setHeightContent = node=>{
 
 export const render = async (node, x, y)=>{
     const { doc, heightPad, widthPad, element } = node;
-    const { props:{ align, objectFit, src } } = element;
+    const { props:{ src }, style:{ align, objectFit } } = element;
 
     const opt = {
         width:widthPad,
