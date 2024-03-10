@@ -62,54 +62,24 @@ const parseCells = typize((v, d)=>(typeof v === "number" ? Array(v).fill("auto")
 const parseRows = parseCells;
 const parseColumns = parseCells;
 
-const createParserBorder = (...nss)=>{
-    const atrs = [
-        [[], (v, d)=>minZeroNumber(v, d)],
-        [[], (v, d)=>notNullString(v, d)],
-        [[], (v, d)=>minZeroNumber(v, d)],
-        [[], (v, d)=>Math.min(1, notNullMinZeroNumber(v, d, 1))]
-    ];
-
-    for (let ns of nss) {
-        atrs[0][0].push(ns+"Weight");
-        atrs[1][0].push(ns+"Color");
-        atrs[2][0].push(ns+"Dash");
-        atrs[3][0].push(ns+"Opacity");
-    }
-
-
-
-    return createParser(atrs);
-};
-
-const parseBorder = createParserBorder("");
-const parseBorderHorizontal = createParserBorder("horizontal", "");
-const parseBorderVertical = createParserBorder("vertical", "");
-const parseBorderInner = createParserBorder("inner", "");
-const parseBorderOuter = createParserBorder("outer", "");
-
-const parseBorderTop = createParserBorder("top", "horizontal", "outer", "");
-const parseBorderRight = createParserBorder("right", "vertical", "outer", "");
-const parseBorderBottom = createParserBorder("bottom", "horizontal", "outer", "");
-const parseBorderLeft = createParserBorder("left", "vertical", "outer", "");
-const parseBorderRow = createParserBorder("row", "horizontal", "inner", "");
-const parseBorderColumn = createParserBorder("column", "vertical", "inner", "");
+const parseBorder = createParser([
+    ["weight", (v, d)=>minZeroNumber(v, d)],
+    ["color", (v, d)=>notNullString(v, d)],
+    ["dash", (v, d)=>minZeroNumber(v, d)],
+    ["opacity", (v, d)=>Math.min(1, notNullMinZeroNumber(v, d, 1))]
+]);
 
 const parseBorders = (ns, to, from, defs)=>{
-    const pre = {...from};
+    const wrap = nss=>nss.map(s=>ns+String.jet.capitalize(s));
 
-    parseBorder("border", pre, pre);
-    parseBorderHorizontal("border", pre, pre);
-    parseBorderVertical("border", pre, pre);
-    parseBorderInner("border", pre, pre);
-    parseBorderOuter("border", pre, pre);
+    parseBorder(wrap(["top", "horizontal", "outer", ""]), to, from, defs);
+    parseBorder(wrap(["left", "vertical", "outer", ""]), to, from, defs);
+    parseBorder(wrap(["bottom", "horizontal", "outer", ""]), to, from, defs);
+    parseBorder(wrap(["right", "vertical", "outer", ""]), to, from, defs);
+    parseBorder(wrap(["row", "horizontal", "inner", ""]), to, from, defs);
+    parseBorder(wrap(["column", "vertical", "inner", ""]), to, from, defs);
 
-    parseBorderTop("border", to, pre, defs);
-    parseBorderRight("border", to, pre, defs);
-    parseBorderBottom("border", to, pre, defs);
-    parseBorderLeft("border", to, pre, defs);
-    parseBorderRow("border", to, pre, defs);
-    parseBorderColumn("border", to, pre, defs);
+    return to;
 };
 
 const _namespaced = {
@@ -122,7 +92,7 @@ const _namespaced = {
     margin:parseSide,
     padding:parseSide,
     align:parseAlign,
-    borders:parseBorders
+    border:parseBorders
 }
 
 export const parseStyle = typize((style, defs)=>{
@@ -149,5 +119,3 @@ export const parseStyle = typize((style, defs)=>{
     });
 
 });
-
-console.log(parseStyle({ border:"1 green", borderInner:"1 blue", align:"center middle", width:"max" }));
