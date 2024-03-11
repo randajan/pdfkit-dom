@@ -1,22 +1,8 @@
 import jet from "@randajan/jet-core";
 import { notNullNumber, notNullMinZeroNumber, notNullString, minZeroNumber, enumFactory, flatArray, minNumber, typize, notNullBoolean, notNull, fitArray, camelCase } from "../helpers";
-import { createParser, createSugarParser, createValidator } from "./parserFactory";
+import { createSugarParser, createValidator } from "./parserFactory";
 
 const { solid } = jet.prop;
-
-//not defaultable
-const parseCell = createParser([
-    ["main|current|target", enumFactory(["min", "max"], (v, d, a) => v ? v : (minZeroNumber(a[0]) || d || "min"))],
-    ["min", (v, d) => minZeroNumber(v, d)],
-    ["max", (v, d, a, r) => minNumber(r.min, v, d, Infinity)],
-    ["background|back", (v, d) => notNullString(v, d)],
-    ["opacity", (v, d) => Math.min(1, notNullMinZeroNumber(v, d, 1))]
-]);
-
-const parseObjectFit = enumFactory(["stretch", "fit", "cover"], (v, d) => v || d || "fit");
-const parseCells = typize((v, d) => (typeof v === "number" ? Array(v).fill("auto") : Array.jet.to(v, " ")).map(v => parseCell(v, d)));
-const parseRows = parseCells;
-const parseColumns = parseCells;
 
 const parsers = jet.map({
     size: {
@@ -71,11 +57,15 @@ const parsers = jet.map({
         ]
     },
     color: {
-        sugar: ["foreground", "background", "opacity"],
+        sugar: ["", "opacity"],
+        sugarNS: [ "color", "background", "bg" ],
         validator:[
-            ["foreground|fore|font|text|stroke", (v, d) => notNullString(v, d)],
-            ["background|back|bg", (v, d) => notNullString(v, d)],
+            ["", (v, d) => notNullString(v, d)],
             ["opacity", (v, d) => Math.min(1, notNullMinZeroNumber(v, d, 1))]
+        ],
+        validatorNS:[
+            "color",
+            ["background", "bg"]
         ]
     },
     border: {
@@ -116,11 +106,37 @@ const parsers = jet.map({
     return v;
 });
 
+const parseObjectFit = enumFactory(["stretch", "fit", "cover"], (v, d) => v || d || "fit");
+
+export const parseCell = typize((style, defs)=>{
+    const { size, font, color } = parsers;
+
+    const input = size.sugar("size", Object.jet.is(style) ? {...style} : style);
+    //font.sugar("font", input);
+    //color.sugar("color", input);
+    color.sugar("background", input);
+    color.sugar("bg", input);
+
+    const output = {};
+    size.validator("size", output, input, defs);
+    //font.validator("font", output, input, defs);
+    //color.validator("color", output, input, defs);
+    color.validator(["background", "bg"], output, input, defs);
+    return output;
+});
+
+const parseCells = typize((cells, defs)=>{
+    const arr = typeof cells === "number" ? Array(cells).fill({}) : Array.jet.to(cells, " ");
+    const dl = defs?.length;
+    return arr.map((cell, key)=>{
+        return parseCell(cell, dl ? defs[Number.jet.period(key, 0, dl)] : undefined);
+    });
+});
 
 export const parseStyle = typize((style, defs) => {
     const input = { ...style };
 
-    const { objectFit, link, lineBreak, ellipsis, paging, childrenCount } = input;
+    const { objectFit, link, lineBreak, ellipsis, paging, rows, columns } = input;
 
     const output = {};
     for (const p in parsers) {
@@ -129,10 +145,8 @@ export const parseStyle = typize((style, defs) => {
         for (const ns of validatorNS) { validator(ns, output, input, defs); }
     }
 
-    const columns = parseColumns(input.columns, defs?.columns);
-    const prerows = parseRows(input.rows, defs?.rows);
-    if (columns.length && !prerows.length) { prerows.push(parseCell()); }
-    const rows = !columns.length ? prerows : fitArray(prerows, Math.ceil(childrenCount / columns.length));
+    //if (columns.length && !prerows.length) { prerows.push(parseCell()); }
+    //const rows = !columns.length ? prerows : fitArray(prerows, Math.ceil(childrenCount / columns.length));
 
     return solid.all(output, {
         link: notNullString(link, defs?.link),
@@ -140,9 +154,7 @@ export const parseStyle = typize((style, defs) => {
         paging: notNullBoolean(paging, defs?.paging, true),
         ellipsis: notNullString(ellipsis, defs?.ellipsis),
         objectFit: parseObjectFit(objectFit, defs?.objectFit),
-        rows,
-        columns
+        rows:parseCells(rows, defs?.rows),
+        columns:parseCells(columns, defs?.columns)
     });
-})
-
-console.log(parseStyle({  }, { borderOuter:"1 red" }));
+});
