@@ -27,6 +27,14 @@ export const sum = (...nums)=>nums.reduce((r, n)=>r+n, 0);
 
 export const enumFactory = (enums, after)=>jet.enumFactory(enums, { before:src=>String.jet.to(src).jet.simplify(), after });
 
+export const camelCase = (...strs)=>{
+    let str = "";
+    for (const s of strs) {
+        if (s) { str += str ? String.jet.capitalize(s) : s; }
+    }
+    return str;
+}
+
 export const typize = fce=>{
     const $$kind = Symbol(String.jet.rnd(5));
     const is = any=>any?.$$kind === $$kind;
