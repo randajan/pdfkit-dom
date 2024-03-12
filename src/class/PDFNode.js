@@ -9,11 +9,11 @@ import { drawHorizontalRects, drawVerticalRects } from "../rendering/drawBackgro
 
 const { solid, virtual, cached } = jet.prop;
 
-const frameSize = (num, propSize, maximaze=true, respectMin=true)=>{
-    let { main, min, max } = propSize;
-    if (maximaze && main === "max") { num = max; }
-    else if (typeof main == "number") { min = max = main; }
-    return respectMin ? Number.jet.frame(num, min, max) : Math.min(num, max);
+
+const frameSize = (num, size, sizeMin, sizeMax, maximaze=true, respectMin=true)=>{
+    if (maximaze && size === "max") { num = sizeMax; }
+    else if (typeof size == "number") { sizeMin = sizeMax = size; }
+    return respectMin ? Number.jet.frame(num, sizeMin, sizeMax) : Math.min(num, sizeMax);
 }
 
 export class PDFNode extends PDFTextNode {
@@ -25,17 +25,13 @@ export class PDFNode extends PDFTextNode {
 
     constructor(doc, element, parent) {
         super(doc, element, parent);
-        const { props, style } = element;
+        const { style } = element;
 
-        const children = [];
-
-        for (const child of props.children) {
-            children.push(PDFNode.create(doc, child, this));
-        }
+        const children = element.children.map(child=>PDFNode.create(doc, child, this));
 
         virtual.all(this, {
-            widthFix:_=>typeof style.width.main === "number" ? style.width.main : undefined,
-            heightFix:_=>typeof style.height.main === "number" ? style.height.main : undefined,
+            widthFix:_=>typeof style.width === "number" ? style.width : undefined,
+            heightFix:_=>typeof style.height === "number" ? style.height : undefined,
             childCount:_=>children.length
         });
 
@@ -57,39 +53,38 @@ export class PDFNode extends PDFTextNode {
     }
 
     _setWidthRaw(widthRaw) {
-        const { gaps, style:{ width } } = this.element;
-        
-        super._setWidthRaw(frameSize(widthRaw+gaps.width, width, false));
+        const { gaps, style:{ width, widthMin, widthMax } } = this.element;
+        super._setWidthRaw(frameSize(widthRaw+gaps.width, width, widthMin, widthMax, false));
     }
 
     _setWidthLimit(widthLimit) {
-        const { gaps, style:{ width } } = this.element;
-        super._setWidthLimit(frameSize(widthLimit, width, false, false));
+        const { gaps, style:{ width, widthMin, widthMax } } = this.element;
+        super._setWidthLimit(frameSize(widthLimit, width, widthMin, widthMax, false, false));
         solid(this, "widthPadLimit", minZeroNumber(this.widthLimit-gaps.width));
     }
 
     _setWidthContent(widthPad) {
-        const { gaps, style:{ width } } = this.element;
-        super._setWidth(frameSize(widthPad+gaps.width, width));
-        solid(this, "widthContent", minZeroNumber(frameSize(widthPad+gaps.width, width, false, false)-gaps.width));
+        const { gaps, style:{ width, widthMin, widthMax } } = this.element;
+        super._setWidth(frameSize(widthPad+gaps.width, width, widthMin, widthMax));
+        solid(this, "widthContent", minZeroNumber(frameSize(widthPad+gaps.width, width, widthMin, widthMax, false, false)-gaps.width));
         solid(this, "widthPad", minZeroNumber(this.width-gaps.width));
     }
 
     _setHeightRaw(heightRaw) {
-        const { gaps, style:{ height } } = this.element;
-        super._setHeightRaw(frameSize(heightRaw+gaps.height, height, false));
+        const { gaps, style:{ height, heightMin, heightMax } } = this.element;
+        super._setHeightRaw(frameSize(heightRaw+gaps.height, height, heightMin, heightMax, false));
     }
 
     _setHeightLimit(heightLimit) {
-        const { gaps, style:{ height} } = this.element;
-        super._setHeightLimit(frameSize(heightLimit, height, false, false));
+        const { gaps, style:{ height, heightMin, heightMax} } = this.element;
+        super._setHeightLimit(frameSize(heightLimit, height, heightMin, heightMax, false, false));
         solid(this, "heightPadLimit", minZeroNumber(this.heightLimit-gaps.height));
     }
 
     _setHeightContent(heightPad) {
-        const { gaps, style:{ height } } = this.element;
-        super._setHeight(frameSize(heightPad+gaps.height, height));
-        solid(this, "heightContent", minZeroNumber(frameSize(heightPad+gaps.height, height, false, false)-gaps.height));
+        const { gaps, style:{ height, heightMin, heightMax } } = this.element;
+        super._setHeight(frameSize(heightPad+gaps.height, height, heightMin, heightMax));
+        solid(this, "heightContent", minZeroNumber(frameSize(heightPad+gaps.height, height, heightMin, heightMax, false, false)-gaps.height));
         solid(this, "heightPad", minZeroNumber(this.height-gaps.height));
     }
 
@@ -140,32 +135,36 @@ export class PDFNode extends PDFTextNode {
     //STEP 6
     async render(x, y) {
         const { doc, element, rows, columns } = this;
-        const { style, gaps } = element;
-        const { margin, border, padding, color, grid } = style;
         const { kit } = doc;
-
-        const { left, top, right, bottom, row, column } = border
-
+        const { style, gaps } = element;
+        const {
+            marginTop, marginRight, marginBottom, marginLeft,
+            paddingTop, paddingRight, paddingBottom, paddingLeft,
+            borderTopWeight, borderRightWeight, borderBottomWeight, borderLeftWeight,
+            borderRowWeight, borderRowColor, borderRowDash, borderRowOpacity,
+            borderColumnWeight, borderColumnColor, borderColumnDash, borderColumnOpacity,
+            gridHorizontal, gridVertical
+        } = style;
+        
         let { width, height } = this;
 
-        x += margin.left + left.weight;
-        y += margin.top + top.weight;
-        width -= margin.left + margin.right + left.weight + right.weight;
-        height -= margin.top + margin.bottom + top.weight + bottom.weight;
+        x += marginLeft + borderLeftWeight;
+        y += marginTop + borderTopWeight;
+        width -= marginLeft + marginRight + borderLeftWeight + borderRightWeight;
+        height -= marginTop + marginBottom + borderTopWeight + borderBottomWeight;
 
-        drawBackground(kit, x, y, width, height, color.background, color.opacity);
-        drawHorizontalRects(kit, x, y+padding.top, width, gaps.row, row.weight, this.rows, style.rows);
-        drawVerticalRects(kit, x+padding.left, y, height, gaps.column, column.weight, this.columns, style.columns);
+        drawBackground(kit, x, y, width, height, style);
+        drawHorizontalRects(kit, x, y+paddingTop, width, gaps.row, borderRowWeight, this.rows, element.rows);
+        drawVerticalRects(kit, x+paddingLeft, y, height, gaps.column, borderColumnWeight, this.columns, element.columns);
 
-        drawBorders(kit, x - left.weight, y - top.weight, width + left.weight + right.weight, height + top.weight + bottom.weight, border);
-        drawHorizontals(kit, x, y+padding.top+grid.horizontal, width, gaps.row, rows, row);
-        drawVerticals(kit, x+padding.left+grid.vertical, y, height, gaps.column, columns, column);
+        drawBorders(kit, x, y, width, height, style);
+        drawHorizontals(kit, x, y+paddingTop+gridHorizontal, width, gaps.row, rows, borderRowWeight, borderRowColor, borderRowDash, borderRowOpacity);
+        drawVerticals(kit, x+paddingLeft+gridVertical, y, height, gaps.column, columns, borderColumnWeight, borderColumnColor, borderColumnDash, borderColumnOpacity);
 
-
-        x += padding.left + grid.vertical;
-        y += padding.top + grid.horizontal;
-        width -= padding.left + padding.right + grid.vertical*2;
-        height -= padding.top + padding.bottom + grid.horizontal*2;
+        x += paddingLeft + gridVertical;
+        y += paddingTop + gridHorizontal;
+        width -= paddingLeft + paddingRight + gridVertical*2;
+        height -= paddingTop + paddingBottom + gridHorizontal*2;
 
         await doc.withStyle(style, _=>element.render(this, x, y, width, height));
 

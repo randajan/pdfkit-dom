@@ -9,7 +9,7 @@ import { content } from "./content.jsx";
 
 const doc = PDF.create({layout:"landscape"});
 
-//doc.render(content, fs.createWriteStream('tmp/file.pdf'));
+doc.render(content, fs.createWriteStream('tmp/file.pdf'));
 
 
 // const gen = new PDFGeneratorItcan();

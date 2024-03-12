@@ -94,8 +94,8 @@ const parsers = jet.map({
             ["borderRight", "borderVertical", "borderOuter", "border"],
             ["borderBottom", "borderHorizontal", "borderOuter", "border"],
             ["borderLeft", "borderVertical", "borderOuter", "border"],
-            ["borderRow", "borderHorizontal", "bordeInner", "border"],
-            ["borderColumn", "borderVertical", "bordeInner", "border"],
+            ["borderRow", "borderHorizontal", "borderInner", "border"],
+            ["borderColumn", "borderVertical", "borderInner", "border"],
         ]
     },
 }, (v, n) => {
@@ -144,9 +144,6 @@ export const parseStyle = typize((style, defs) => {
         for (const ns of sugarNS) { sugar(ns, input); } //expand all known sugars
         for (const ns of validatorNS) { validator(ns, output, input, defs); }
     }
-
-    //if (columns.length && !prerows.length) { prerows.push(parseCell()); }
-    //const rows = !columns.length ? prerows : fitArray(prerows, Math.ceil(childrenCount / columns.length));
 
     return solid.all(output, {
         link: notNullString(link, defs?.link),

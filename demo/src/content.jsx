@@ -6,19 +6,19 @@ import fse from "fs-extra";
 const Lorem = props=>{
     const { words } = props;
 
+
     return (
-        <div style={{ border:"1 green", align:"center middle", width:"max" }}>
-            <div style={{width:"max", height:"max", border:"1 red"}}>{loremIpsum({ count:words, units:"words" })}</div>
+        <div style={{ border:"1 green", align:"center middle", width:"max", height:"max" }}>
+            <div style={{ border:"1 red", align:"center" }}>{loremIpsum({ count:words, units:"words" })}</div>
         </div>
     );
 }
 
 
-const rgb = [{background:"red", opacity:.2}, {background:"green", opacity:.2}, {background:"blue", opacity:.2}];
+const rgb = [{bg:"red .2"}, {bg:"green .2"}, {bg:"blue .2"}];
 
 export const content = (
-    <grid style={{columns:rgb, rows:rgb, margin:"100", height:"max", width:"max", align:"center middle", grid:"5", padding:"5 10", border:{row:"0", column:"0"}}}>
-        {Array(9).fill(<Lorem words={Math.round(Number.jet.rnd(5, 20))}/>)}
+    <grid style={{columns:rgb, rows:rgb, margin:100, height:"max", width:"max", align:"center middle", grid:5, padding:30}}>
+        {Array(9).fill("").map(v=><Lorem words={Math.round(Number.jet.rnd(5, 20))}/>)}
     </grid>
 );
-

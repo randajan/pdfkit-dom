@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import { flatArray } from "../helpers";
+import { fitArray, flatArray } from "../helpers";
 import { elementPick } from "../elements/elements";
 import { parseStyle } from "../parser/parsers";
 import { computeAligns, computeGaps } from "../compute";
@@ -28,20 +28,22 @@ export class PDFElement {
     constructor(tagName, props={}) {
         const def = elementPick(tagName);
         props = Object.jet.to(props);
-        props.children = flatArray(props.children);
 
         solid.all(this, {
             tagName,
-            props,
         });
 
-        props.style = Object.jet.to(props.style);
-        props.style.childrenCount = props.children.length;
+        //if (columns.length && !prerows.length) { prerows.push(parseCell()); }
+        //const rows = !columns.length ? prerows : fitArray(prerows, Math.ceil(childrenCount / columns.length));
 
         cached.all(this, {}, {
-            style:_=>parseStyle(props.style, def.defaultStyle),
-            gaps:_=>computeGaps(this.style),
-            aligns:_=>computeAligns(this.style),
+            props:_=>Object.jet.exclude(props, ["children", "style"]),
+            children:_=>flatArray(props.children),
+            style:_=>parseStyle(Object.jet.to(props.style), def.defaultStyle),
+            columns:_=>this.style.columns,
+            rows:_=>!this.columns.length ? this.style.rows : fitArray(this.style.rows, Math.ceil(this.children.length / this.columns.length)),
+            gaps:_=>computeGaps(this),
+            aligns:_=>computeAligns(this),
         });
 
         solid.all(this, def, false);

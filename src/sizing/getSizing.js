@@ -24,7 +24,7 @@ const allocate = (size, sizes, getRawSize)=>{
         allocator.add(min, set, "set", cell);
         allocator.add(set, req, "req", cell);
 
-        if (size.main !== "min" && req <= max) { allocator.add(req, max, "ext", cell); }
+        if (size !== "min" && req <= max) { allocator.add(req, max, "ext", cell); }
     }
 
     return allocator;
@@ -67,6 +67,6 @@ const fetchSizes = (limit, zones)=>{
     return sizes;
 }
 
-export const getSizing = (limit, propSize, propSizes, getRawSize)=>{
-    return fetchSizes(limit, fetchZones(allocate(propSize, propSizes, getRawSize)));
+export const getSizing = (limit, size, propSizes, getRawSize)=>{
+    return fetchSizes(limit, fetchZones(allocate(size, propSizes, getRawSize)));
 }

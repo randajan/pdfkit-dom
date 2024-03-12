@@ -1,19 +1,22 @@
 import { drawHorizontal, drawVertical } from "./drawLine";
 
-export const drawBorders = (kit, x, y, width, height, border)=>{
+export const drawBorders = (kit, x, y, width, height, style)=>{
+    const {
+        borderTopWeight, borderRightWeight, borderBottomWeight, borderLeftWeight,
+        borderTopColor, borderRightColor, borderBottomColor, borderLeftColor,
+        borderTopDash, borderRightDash, borderBottomDash, borderLeftDash,
+        borderTopOpacity, borderRightOpacity, borderBottomOpacity, borderLeftOpacity
+    } = style || {};
 
-    const w = {};
-    for (let i in border) { w[i] = border[i].weight/2; }
+    x -= borderLeftWeight/2;
+    y -= borderTopWeight/2;
 
-    x += w.left;
-    y += w.top;
+    width += (borderLeftWeight+borderRightWeight)/2;
+    height += (borderTopWeight+borderBottomWeight)/2;
 
-    width -= w.left+w.right;
-    height -= w.top+w.bottom;
-
-    drawHorizontal(kit, x, y, width, border.top);
-    drawVertical(kit, x+width, y, height, border.right);
-    drawVertical(kit, x, y, height, border.left);
-    drawHorizontal(kit, x, y+height, width, border.bottom);
+    drawHorizontal(kit, x, y, width, borderTopWeight, borderTopColor, borderTopDash, borderTopOpacity);
+    drawVertical(kit, x+width, y, height, borderRightWeight, borderRightColor, borderRightDash, borderRightOpacity);
+    drawVertical(kit, x, y, height, borderLeftWeight, borderLeftColor, borderLeftDash, borderLeftOpacity);
+    drawHorizontal(kit, x, y+height, width, borderBottomWeight, borderBottomColor, borderBottomDash, borderBottomOpacity);
 
 }

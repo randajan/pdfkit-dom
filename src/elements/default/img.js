@@ -39,13 +39,13 @@ export const setHeightContent = node=>{
 
 export const render = async (node, x, y)=>{
     const { doc, heightPad, widthPad, element } = node;
-    const { props:{ src }, style:{ align, objectFit } } = element;
+    const { props:{ src }, style:{ alignHorizontal, alignVertical, objectFit } } = element;
 
     const opt = {
         width:widthPad,
         height:heightPad,
-        align:align.horizontal,
-        valign:align.vertical
+        align:alignHorizontal,
+        valign:alignVertical
     }
 
     if (objectFit == "cover" || objectFit == "fit") {

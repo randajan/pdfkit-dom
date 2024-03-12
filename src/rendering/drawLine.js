@@ -1,15 +1,15 @@
 import { notNullMinZeroNumber } from "../helpers";
 
-export const drawLine = (isVertical, kit, x, y, length, border)=>{
+export const drawLine = (isVertical, kit, x, y, length, weight, color, dash, opacity)=>{
     
-    if (!border.weight || border.color === "transparent" || border.opacity <= 0) { return kit; }
+    if (!weight || color === "transparent" || opacity <= 0) { return kit; }
 
     kit.moveTo(x, y)
         .lineTo(isVertical ? x : x+length, isVertical ? y+length : y)
-        .lineWidth(border.weight);
+        .lineWidth(weight);
 
-    if (border.dash) {
-        const space = border.dash;
+    if (dash) {
+        const space = dash;
         const scale = length/space;
         const count = Math.ceil(scale);
         const isOdd = !!(count%2);
@@ -18,15 +18,15 @@ export const drawLine = (isVertical, kit, x, y, length, border)=>{
         kit.dash(space, { space, phase })
     }
 
-    kit.strokeOpacity(border.opacity).stroke(border.color);
+    kit.strokeOpacity(opacity).stroke(color);
     kit.undash();
     
 }
 
-export const drawHorizontal = (kit, x, y, length, border)=>{
-    return drawLine(false, kit, x, y, length, border);
+export const drawHorizontal = (kit, x, y, length, weight, color, dash, opacity)=>{
+    return drawLine(false, kit, x, y, length, weight, color, dash, opacity);
 }
 
-export const drawVertical = (kit, x, y, length, border)=>{
-    return drawLine(true, kit, x, y, length, border);
+export const drawVertical = (kit, x, y, length, weight, color, dash, opacity)=>{
+    return drawLine(true, kit, x, y, length, weight, color, dash, opacity);
 }

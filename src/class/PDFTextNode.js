@@ -14,12 +14,17 @@ const createOptions = (style, width, height)=>{
     let opt;
 
     if (!style) { opt = {} } else {
-        const { align, font, spacing, link, lineBreak, ellipsis } = style;
+        const {
+            alignHorizontal, alignBaseline,
+            fontItalic, fontUnderline,
+            spacingLine, spacingWord, spacingCharacter,
+            link, lineBreak, ellipsis
+        } = style;
 
         opt = {
-            align:align.horizontal, baseline:align.baseline,
-            oblique:font.italic, underline:font.underline, //columnGap:gaps.column,
-            lineGap:spacing.line, wordSpacing:spacing.word, characterSpacing:spacing.character,
+            align:alignHorizontal, baseline:alignBaseline,
+            oblique:fontItalic, underline:fontUnderline, //columnGap:gaps.column,
+            lineGap:spacingLine, wordSpacing:spacingWord, characterSpacing:spacingCharacter,
             link, lineBreak, ellipsis
         }
     }

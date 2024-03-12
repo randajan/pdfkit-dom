@@ -66,9 +66,9 @@ export class PDF {
         const { kit, current } = vault.get(this.uid);
         let c = { ...current[0].inherit };
 
-        if (style.font.size) { c.fontSize = style.font.size; }
-        if (style.font.family) { c.fontFamily = style.font.family; }
-        if (style.color.foreground) { c.fillColor = style.color.foreground; }
+        if (style.fontSize) { c.fontSize = style.fontSize; }
+        if (style.fontFamily) { c.fontFamily = style.fontFamily; }
+        if (style.color) { c.fillColor = style.color; }
 
         current.unshift({style, inherit:c});
         
