@@ -11,20 +11,20 @@ const allocate = (size, sizes, getRawSize)=>{
     const allocator = new Allocator(_zones); 
     
     for (let index=0; index<sizes.length; index++) {
-        const { main, min, max } = sizes[index];
+        const { size, sizeMin, sizeMax } = sizes[index];
         const sizeRaw = getRawSize(index);
 
         const cell = { index, sizeRaw };
-        const byMin = main === "min", byMax = main === "max";
+        const byMin = size === "min", byMax = size === "max";
 
-        const set = (byMin || byMax) ? min : Number.jet.frame(main, min, max);
-        const req = (!byMin && !byMax) ? set : Number.jet.frame(sizeRaw, min, max);
+        const set = (byMin || byMax) ? sizeMin : Number.jet.frame(size, sizeMin, sizeMax);
+        const req = (!byMin && !byMax) ? set : Number.jet.frame(sizeRaw, sizeMin, sizeMax);
 
-        allocator.add(0, min, "min", cell);
-        allocator.add(min, set, "set", cell);
+        allocator.add(0, sizeMin, "min", cell);
+        allocator.add(sizeMin, set, "set", cell);
         allocator.add(set, req, "req", cell);
 
-        if (size !== "min" && req <= max) { allocator.add(req, max, "ext", cell); }
+        if (size !== "min" && req <= sizeMax) { allocator.add(req, sizeMax, "ext", cell); }
     }
 
     return allocator;
@@ -67,6 +67,26 @@ const fetchSizes = (limit, zones)=>{
     return sizes;
 }
 
-export const getSizing = (limit, size, propSizes, getRawSize)=>{
-    return fetchSizes(limit, fetchZones(allocate(size, propSizes, getRawSize)));
+
+const fixSizes = (limit, cells)=>{
+    let totalMin = 0, totalFix = 0;
+
+    for (const { size, sizeMin } of cells) {
+        if (typeof size == "number") { totalFix += size; }
+        totalMin += sizeMin; 
+    }
+
+    const setMin = Math.min(limit, totalMin), setFix = Math.min(limit-setMin, totalFix);
+    const ratioMin = totalMin <= 0 ? 0 : setMin / totalMin, ratioFix = totalFix <= 0 ? 0 : setFix / totalFix;
+
+    return cells.map(({size, sizeMin})=>{
+        const min = sizeMin*ratioMin;
+        return min + (typeof size != "number" ? 0 : Math.max(0, size*ratioFix-min));
+    });
+}
+
+export const getSizing = (limit, size, cells, getRawSize)=>{
+    
+    if (limit == 600) { console.log(limit, fixSizes(limit, cells)); }
+    return fetchSizes(limit, fetchZones(allocate(size, cells, getRawSize)));
 }

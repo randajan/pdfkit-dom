@@ -46,7 +46,7 @@ export const createSugarParser = (atrs)=>{
 
 export const createValidator = (atrs)=>{
     atrs = atrs.map(atr=>{
-        const aliases = Array.jet.to(atr[0], "|");
+        const aliases = Array.isArray(atr[0]) ? atr[0] : atr[0].split("|");
         return [ aliases[0], atr[1], createRetriever(aliases) ];
     });
 

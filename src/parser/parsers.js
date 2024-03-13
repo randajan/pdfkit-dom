@@ -9,9 +9,9 @@ const parsers = jet.map({
         sugar: ["", "min", "max"],
         sugarNS: ["width", "height"],
         validator:[
-            ["", enumFactory(["min", "max"], (v, d, g, raw) => v ? v : (minZeroNumber(raw) || d || "min"))],
-            ["min", (v, d) => minZeroNumber(v, d)],
-            ["max", (v, d, g) => minNumber(g.min, v, d, Infinity)],
+            ["", enumFactory(["min", "max"], (v, d, g, raw) => v ? v : (raw != null || d != null) ? minZeroNumber(raw, d) : "min")],
+            ["min", (v, d, g) =>Math.min(minZeroNumber(v, d), typeof g[""] == "number" ? g[""] : Infinity)],
+            ["max", (v, d, g) => minNumber(Math.max(g.min, typeof g[""] == "number" ? g[""] : 0), v, d, Infinity)],
         ]
     },
     side: {

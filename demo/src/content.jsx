@@ -18,7 +18,7 @@ const Lorem = props=>{
 const rgb = [{bg:"red .2"}, {bg:"green .2"}, {bg:"blue .2"}];
 
 export const content = (
-    <grid style={{columns:rgb, rows:[{bg:"red .2"}, {bg:"blue .2"}], margin:100, height:"max", width:"max", align:"center middle", grid:20}}>
+    <grid style={{columns:["300 300 70", "400 400", "300"], rows:rgb, height:"max", width:"600", align:"center middle", border:"0 transparent"}}>
         {Array(9).fill("").map(v=><Lorem words={Math.round(Number.jet.rnd(5, 20))}/>)}
     </grid>
 );
