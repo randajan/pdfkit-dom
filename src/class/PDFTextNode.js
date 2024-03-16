@@ -90,7 +90,6 @@ export class PDFTextNode {
 
     //STEP 5
     async setHeight(heightLimit) {
-        console.log(heightLimit);
         this._setHeightLimit(heightLimit);
         this._setHeight(this.heightRaw);
         return this.height;
