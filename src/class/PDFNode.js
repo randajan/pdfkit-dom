@@ -134,7 +134,7 @@ export class PDFNode extends PDFTextNode {
 
     //STEP 6
     async render(x, y) {
-        const { doc, element, rows, columns } = this;
+        const { doc, element, rows, columns, widthContent, heightContent } = this;
         const { kit } = doc;
         const { style, gaps } = element;
         const {
@@ -148,6 +148,8 @@ export class PDFNode extends PDFTextNode {
         
         let { width, height } = this;
 
+        if (!widthContent || !heightContent) { return; }
+        
         x += marginLeft + borderLeftWeight;
         y += marginTop + borderTopWeight;
         width -= marginLeft + marginRight + borderLeftWeight + borderRightWeight;

@@ -1,44 +1,18 @@
+import { sum } from "../helpers";
 import { Allocator } from "./Allocator";
 
 import jet from "@randajan/jet-core";
 
-const _zones = ["min", "set", "req", "ext"];
-
-const rawSizeCollector = (current, cell)=>current+cell.sizeRaw;
-
-const allocate = (size, sizes, getRawSize)=>{
-
-    const allocator = new Allocator(_zones); 
-    
-    for (let index=0; index<sizes.length; index++) {
-        const { size, sizeMin, sizeMax } = sizes[index];
-        const sizeRaw = getRawSize(index);
-
-        const cell = { index, sizeRaw };
-        const byMin = size === "min", byMax = size === "max";
-
-        const set = (byMin || byMax) ? sizeMin : Number.jet.frame(size, sizeMin, sizeMax);
-        const req = (!byMin && !byMax) ? set : Number.jet.frame(sizeRaw, sizeMin, sizeMax);
-
-        allocator.add(0, sizeMin, "min", cell);
-        allocator.add(sizeMin, set, "set", cell);
-        allocator.add(set, req, "req", cell);
-
-        if (size !== "min" && req <= sizeMax) { allocator.add(req, sizeMax, "ext", cell); }
-    }
-
-    return allocator;
-}
-
 const fetchZones = (allocator)=>{
-    const zones = _zones.map(z=>[]);
+    const kinds = allocator.kinds;
+    const zones = kinds.map(z=>[]);
 
     let from = 0;
 
     for (const a of allocator.list) {
         const size = a.to-from;
-        for (const i in _zones) {
-            const zone = _zones[i];
+        for (const i in kinds) {
+            const zone = kinds[i];
             const targets = a[zone];
             if (!targets.length) { continue; }
             zones[i].push({ size, zone, targets });
@@ -49,26 +23,28 @@ const fetchZones = (allocator)=>{
     return [].concat(...zones);
 }
 
-const fetchSizes = (limit, zones)=>{
-    const sizes = [];
-    for (const { size, zone, targets } of zones) {
-        if (limit <= 0) { break; }
-        const toGive = Math.min(limit, size*targets.length);
-        const isExt = zone === "ext";
-        const sizeRawTotal = isExt ? targets.reduce(rawSizeCollector, 0) : undefined;
-
-        for (const { index, sizeRaw } of targets) {
-            const val = toGive/(isExt ? sizeRawTotal/sizeRaw : targets.length);
-            sizes[index] = (sizes[index] || 0) + val;
-            limit -= val;
-        }
-    }
+const allocateZones = (maximaze, cells, getRawSize)=>{
+    const allocator = new Allocator(["req", "ext"]);
     
-    return sizes;
+    for (let index=0; index<cells.length; index++) {
+        const { size, sizeMin, sizeMax } = cells[index];
+        const byMin = size === "min", byMax = size === "max";
+        if (!byMin && !byMax) { continue; }
+
+        const sizeRaw = getRawSize(index);
+        const cell = { index, sizeRaw };
+        const req = Math.min(sizeRaw, sizeMax);
+
+        allocator.add(sizeMin, req, "req", cell);
+        if (maximaze && byMax) { allocator.add(req, sizeMax, "ext", cell); }
+    }
+
+    return allocator;
 }
 
+const getFixedSizes = (limit, cells)=>{
+    if (limit <= 0) { return { sum:0, sizes:[] }; }
 
-const fixSizes = (limit, cells)=>{
     let totalMin = 0, totalFix = 0;
 
     for (const { size, sizeMin } of cells) {
@@ -79,14 +55,56 @@ const fixSizes = (limit, cells)=>{
     const setMin = Math.min(limit, totalMin), setFix = Math.min(limit-setMin, totalFix);
     const ratioMin = totalMin <= 0 ? 0 : setMin / totalMin, ratioFix = totalFix <= 0 ? 0 : setFix / totalFix;
 
-    return cells.map(({size, sizeMin})=>{
-        const min = sizeMin*ratioMin;
-        return min + (typeof size != "number" ? 0 : Math.max(0, size*ratioFix-min));
-    });
+    return {
+        sum:setMin+setFix,
+        sizes:cells.map(({size, sizeMin})=>{
+            const min = sizeMin*ratioMin;
+            return min + (typeof size != "number" ? 0 : Math.max(0, size*ratioFix-min));
+        })
+    }
 }
 
-export const getSizing = (limit, size, cells, getRawSize)=>{
+const getAutoSizes = (maximaze, limit, cells, getRawSize)=>{
+    if (limit <= 0) { return { sum:0, sizes:[] }; }
+
+    const allocator = allocateZones(maximaze, cells, getRawSize);
+    const zones = fetchZones(allocator);
+
+    const sizes = [];
+    let sum = 0;
+
+    for (const { size, zone, targets } of zones) {
+        if (limit <= 0) { break; }
+        const toGive = Math.min(limit, size*targets.length);
+        const isExt = zone === "ext";
+        //const sizeRawTotal = isExt ? targets.reduce(rawSizeCollector, 0) : undefined;
+
+        for (const { index, sizeRaw } of targets) {
+            const val = toGive/( targets.length); //isExt ? sizeRawTotal/sizeRaw :
+            sizes[index] = (sizes[index] || 0) + val;
+            sum += val;
+            limit -= val;
+        }
+    }
     
-    if (limit == 600) { console.log(limit, fixSizes(limit, cells)); }
-    return fetchSizes(limit, fetchZones(allocate(size, cells, getRawSize)));
+    return { sum, sizes }
+
+}
+
+
+
+export const getSizing = (limit, size, cells, getRawSize)=>{
+    const maximaze = size === "max";
+
+    const fixed = getFixedSizes(limit, cells);
+    limit -= fixed.sum;
+    const auto = getAutoSizes(maximaze, limit, cells, getRawSize);
+    limit -= auto.sum;
+
+    const sum = fixed.sum + auto.sum;
+    
+    return cells.map((c, i)=>{
+        let sizeSet = (fixed?.sizes[i] || 0) + (auto?.sizes[i] || 0);
+        return (!maximaze || limit <= 0) ? sizeSet : sizeSet + limit*( sizeSet / sum );
+    });
 }

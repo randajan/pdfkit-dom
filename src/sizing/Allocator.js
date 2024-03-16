@@ -23,7 +23,8 @@ export class Allocator {
 
         solid.all(this, {
             list,
-            add
+            add,
+            kinds
         });
 
         for (const k of kinds) {
