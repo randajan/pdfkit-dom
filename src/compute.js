@@ -38,13 +38,3 @@ export const computeAligns = (element)=>{
         baseline:alignBaseline === "bottom" ? 1 : alignBaseline === "middle" ? .5 : 0,
     })
 }
-
-export const computeContent = (raw, forced, free, gap, { main, min, max })=>{
-    let c;
-    
-    if (forced != null) { c = forced-gap; } else {
-        c = main === "max" ? Infinity : (main === "min" || main === "auto") ? raw : main-gap;
-        c = Number.jet.frame(c, min, max);
-    }
-    return Math.min(free-gap, c);
-}
