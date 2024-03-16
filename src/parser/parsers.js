@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import { notNullNumber, notNullMinZeroNumber, notNullString, minZeroNumber, enumFactory, flatArray, minNumber, typize, notNullBoolean, notNull, fitArray, camelCase } from "../helpers";
+import { notNullNumber, notNullMinZeroNumber, notNullString, minZeroNumber, enumFactory, minNumber, typize, notNullBoolean, notNull } from "../helpers";
 import { createSugarParser, createValidator } from "./parserFactory";
 
 const { solid } = jet.prop;
@@ -126,11 +126,16 @@ export const parseCell = typize((style, defs)=>{
 });
 
 const parseCells = typize((cells, defs)=>{
-    const arr = typeof cells === "number" ? Array(cells).fill({}) : Array.jet.to(cells, " ");
-    const dl = defs?.length;
-    return arr.map((cell, key)=>{
-        return parseCell(cell, dl ? defs[Number.jet.period(key, 0, dl)] : undefined);
-    });
+    cells = typeof cells === "number" ? Array(cells).fill({}) : Array.jet.to(cells, " ");
+    const cl = cells.length, dl = defs?.length || 0;
+    const res = [];
+    for (let i=0; (i<cl || i<dl); i++) {
+        res[i] = parseCell(
+            cl ? cells[Number.jet.period(i, 0, cl)] : undefined,
+            dl ? defs[Number.jet.period(i, 0, dl)] : undefined
+        )
+    }
+    return res;
 });
 
 export const parseStyle = typize((style, defs) => {

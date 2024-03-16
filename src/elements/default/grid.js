@@ -11,14 +11,13 @@ const getCdr = (node, childIndex)=>[ getRid(node, childIndex), getCid(node, chil
 
 
 export const defaultStyle = {
+    columns:"min",
+    rows:"min",
     border:"1 black"
 };
 
 export const validate = node=>{
-    const { columns } = node.element;
-    
-    if (columns.length) { return; }
-    throw Error(`Grid requires columns to be set`);
+
 }
 
 export const setWidthRaw = async (node)=>{

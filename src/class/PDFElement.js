@@ -33,9 +33,6 @@ export class PDFElement {
             tagName,
         });
 
-        //if (columns.length && !prerows.length) { prerows.push(parseCell()); }
-        //const rows = !columns.length ? prerows : fitArray(prerows, Math.ceil(childrenCount / columns.length));
-
         cached.all(this, {}, {
             props:_=>Object.jet.exclude(props, ["children", "style"]),
             children:_=>flatArray(props.children),
