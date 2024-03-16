@@ -19,6 +19,6 @@ const rgb = [{bg:"red .2"}, {bg:"green .2"}, {bg:"blue .2"}];
 
 export const content = (
     <grid style={{columns:["50", "max", "50"], rows:rgb, height:"max", width:"min", align:"center middle", margin:"30", grid:"5"}}>
-        {Array(9).fill("").map(v=><Lorem words={Math.round(Number.jet.rnd(5, 5))}/>)}
+        {Array(9).fill("").map(v=>String.jet.rnd(5))}
     </grid>
 );

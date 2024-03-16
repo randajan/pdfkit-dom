@@ -4,6 +4,7 @@ import ImportGlobPlugin from 'esbuild-plugin-import-glob';
 slib(process.env.NODE_ENV==="prod", {
     port:4002,
     mode:"node",
+    minify:false,
     loader:{
         ".js":"jsx",
         ".svg":"file",
