@@ -66,19 +66,20 @@ export class PDF {
         const { kit, current } = vault.get(this.uid);
         let c = { ...current[0].inherit };
 
-        if (style.fontSize) { c.fontSize = style.fontSize; }
-        if (style.fontFamily) { c.fontFamily = style.fontFamily; }
-        if (style.color) { c.fillColor = style.color; }
+        if (style.fontSize != null) { c.fontSize = style.fontSize; }
+        if (style.fontFamily != null) { c.fontFamily = style.fontFamily; }
+        if (style.color != null) { c.fillColor = style.color; }
+        if (style.colorOpacity != null) { c.colorOpacity = style.colorOpacity; }
 
         current.unshift({style, inherit:c});
         
-        kit.font(c.fontFamily, c.fontSize).fillColor(c.fillColor);
+        kit.font(c.fontFamily, c.fontSize).fillColor(c.fillColor, c.colorOpacity);
         const result = await callback(this);
 
         current.shift();
 
         c = current[0]?.inherit;
-        kit.font(c.fontFamily, c.fontSize).fillColor(c.fillColor);
+        kit.font(c.fontFamily, c.fontSize).fillColor(c.fillColor, c.colorOpacity);
 
         return result;
     }
