@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import { minZeroNumber, sum, vault } from "../helpers";
+import { minZeroNumber } from "../helpers";
 import { PDFElement } from "./PDFElement";
 import { PDFTextNode } from "./PDFTextNode";
 import { drawBorders } from "../rendering/drawBorders";

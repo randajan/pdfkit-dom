@@ -1,7 +1,7 @@
 import jet from "@randajan/jet-core";
 
 const { solid } = jet.prop;
-export const vault = jet.vault();
+export const vault = new WeakMap();
 
 export const sides = ["top", "left", "right", "bottom"];
 

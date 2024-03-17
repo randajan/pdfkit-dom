@@ -35,7 +35,7 @@ export class PDF {
         };
 
         const kit = new PDFKit(options);
-        const [ uid, _p ] = vault.set({
+        const _p = {
             kit,
             options,
             state:"init", //init, rendering, done
@@ -44,10 +44,10 @@ export class PDF {
                 fontFamily:"Courier",
                 foreground:"#000000"
             } }],
-        });
+        }
+        vault.set(this, _p);
 
         solid.all(this, {
-            uid,
             kit,
             page:virtual.all({}, {
                 width:_=>minZeroNumber(kit.page.width),
@@ -63,7 +63,7 @@ export class PDF {
     }
 
     async withStyle(style, callback) {
-        const { kit, current } = vault.get(this.uid);
+        const { kit, current } = vault.get(this);
         let c = { ...current[0].inherit };
 
         if (style.fontSize != null) { c.fontSize = style.fontSize; }
@@ -85,7 +85,7 @@ export class PDF {
     }
 
     async render(children, pipeDestination, pipeOptions) {
-        const _p = vault.get(this.uid);
+        const _p = vault.get(this);
 
         if (_p.state !== "init") { throw Error(this.msg("allready " + _p.state)); }
         _p.state = "rendering";
@@ -113,8 +113,6 @@ export class PDF {
         });
 
         _p.kit.end();
-
-        vault.end(this.uid);
 
         await prom;
     }

@@ -69,7 +69,7 @@ export class PDFTextNode {
 
     //STEP 2
     async setWidthRaw() {
-        const { kit, current } = vault.get(this.doc.uid);
+        const { kit, current } = vault.get(this.doc);
         this._setWidthRaw(kit.widthOfString(this.element, createOptions(current[0].style)))
         return this.widthRaw;
     }
@@ -83,7 +83,7 @@ export class PDFTextNode {
 
     //STEP 4
     async setHeightRaw() {
-        const { kit, current } = vault.get(this.doc.uid);
+        const { kit, current } = vault.get(this.doc);
         this._setHeightRaw(kit.heightOfString(this.element, createOptions(current[0].style, this.width)));
         return this.heightRaw;
     }
@@ -97,7 +97,7 @@ export class PDFTextNode {
 
     //STEP 6
     async render(x, y) {
-        const { kit, current } = vault.get(this.doc.uid);
+        const { kit, current } = vault.get(this.doc);
         const { doc, element, width, height } = this;
         
         kit.text(element, x, y, createOptions(current[0].style, width, height));
