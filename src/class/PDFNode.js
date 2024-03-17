@@ -20,7 +20,7 @@ export class PDFNode extends PDFTextNode {
 
     static create(doc, element, parent) {
         if (PDFElement.is(element)) { return new element.NodeConstructor(doc, element, parent); }
-        return new PDFTextNode(doc, element, parent);
+        return new PDFTextNode(doc, String.jet.to(element), parent);
     }
 
     constructor(doc, element, parent) {

@@ -15,7 +15,7 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "@randajan/jet-core": "^3.2.21",
+    "@randajan/jet-core": "^3.3.0",
     "image-size": "^1.1.1",
     "pdfkit": "^0.14.0",
     "svg-to-pdfkit": "^0.1.8"
@@ -26,7 +26,6 @@
     "lorem-ipsum": "^2.0.8"
   },
   "dependencies": {
-    "@randajan/jet-core": "^3.3.0",
     "esbuild-plugin-import-glob": "^0.1.1"
   },
   "files": [
