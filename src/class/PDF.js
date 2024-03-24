@@ -94,7 +94,7 @@ export class PDF {
 
         const { width, height } = this.page;
 
-        const node = PDFNode.create(this, children);
+        const node = PDFNode.create(this, await children);
         await node.validate();
         await node.setWidthRaw();
         await node.setWidth(width);

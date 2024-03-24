@@ -10,17 +10,19 @@ export class PDFElement {
 
     static is(any) { return any instanceof PDFElement; }
 
-    static create(tagName, props, ...children) {
+    static async create(tagName, props, ...children) {
         if (!props) { props = {}; }
 
         if (!children.length) {}
         else if (!props.hasOwnProperty("children")) { props.children = children; }
         else { props.children = [props.children, children]; }
 
+        props.children = await flatArray(props.children, []);
+
         if (typeof tagName === "function") { return tagName(props); }
 
         tagName = String.jet.to(tagName);
-        if (!tagName) { return flatArray(props.children); }
+        if (!tagName) { return props.children; }
 
         return new PDFElement(tagName, props);
     }
@@ -31,11 +33,11 @@ export class PDFElement {
 
         solid.all(this, {
             tagName,
+            children:props.children
         });
 
         cached.all(this, {}, {
             props:_=>Object.jet.exclude(props, ["children", "style"]),
-            children:_=>flatArray(props.children),
             style:_=>parseStyle(Object.jet.to(props.style), def.defaultStyle),
             columns:_=>this.style.columns,
             rows:_=>!this.columns.length ? this.style.rows : fitArray(this.style.rows, Math.ceil(this.children.length / this.columns.length)),

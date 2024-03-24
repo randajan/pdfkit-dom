@@ -1,6 +1,6 @@
 import jet from "@randajan/jet-core";
 import { PDFElement } from "./PDFElement";
-import { flatArray, minZeroNumber, vault } from "../helpers";
+import { minZeroNumber, vault } from "../helpers";
 
 const { solid, virtual, cached, safe } = jet.prop;
 
@@ -39,15 +39,14 @@ const createOptions = (style, width, height)=>{
 
 export class PDFTextNode {
 
-    static create(doc, element, parent) {
-        return new PDFTextNode(doc, element, parent);
+    static create(doc, element) {
+        return new PDFTextNode(doc, String.jet.to(element));
     }
 
-    constructor(doc, element, parent) {
+    constructor(doc, element) {
 
         solid.all(this, {
             doc,
-            parent,
         }, false);
 
         solid.all(this, {

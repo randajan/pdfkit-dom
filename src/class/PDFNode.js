@@ -18,16 +18,18 @@ const frameSize = (num, size, sizeMin, sizeMax, maximaze=true, respectMin=true)=
 
 export class PDFNode extends PDFTextNode {
 
-    static create(doc, element, parent) {
-        if (PDFElement.is(element)) { return new element.NodeConstructor(doc, element, parent); }
-        return new PDFTextNode(doc, String.jet.to(element), parent);
+    static create(doc, element) {
+        if (!PDFElement.is(element)) { return PDFTextNode.create(doc, element); }
+        return new element.NodeConstructor(doc, element);
     }
 
-    constructor(doc, element, parent) {
-        super(doc, element, parent);
+    constructor(doc, element) {
+        super(doc, element);
         const { style } = element;
 
         const children = element.children.map(child=>PDFNode.create(doc, child, this));
+
+        
 
         virtual.all(this, {
             widthFix:_=>typeof style.width === "number" ? style.width : undefined,

@@ -3,13 +3,13 @@ import { loremIpsum } from "lorem-ipsum";
 import { PDF } from "../../dist/index.js";
 import fse from "fs-extra";
 
-const Lorem = props=>{
+const Lorem = async props=>{
     const { words } = props;
 
 
     return (
         <div style={{ border:"1 green", align:"center middle", width:"max", height:"max" }}>
-            <div style={{ border:"1 red", align:"center", color:"red" }}>{loremIpsum({ count:words, units:"words" })}</div>
+            <div style={{ border:"1 red", align:"center" }}>{loremIpsum({ count:words, units:"words" })}</div>
         </div>
     );
 }

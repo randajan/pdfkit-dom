@@ -53,11 +53,11 @@ export const mapSides = callback=>{
     return result;
 }
 
-export const flatArray = (srcArr, dstArr=[])=>{
+export const flatArray = async (srcArr, dstArr=[])=>{
     if (srcArr == null) {}
-    else if (!Array.isArray(srcArr)) { dstArr.push(srcArr); }
-    else {
-        for (const item of srcArr) { flatArray(item, dstArr); }
+    else if (!Array.isArray(srcArr)) { dstArr.push(await srcArr); }
+    else { 
+        for (const item of srcArr) { await flatArray(item, dstArr); }
     }
     return dstArr;
 }
