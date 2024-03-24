@@ -39,11 +39,11 @@ export class PDF {
             kit,
             options,
             state:"init", //init, rendering, done
-            current:[{ inherit:{
+            styles:[{
                 fontSize:12,
                 fontFamily:"Courier",
                 foreground:"#000000"
-            } }],
+            }],
         }
         vault.set(this, _p);
 
@@ -63,24 +63,21 @@ export class PDF {
     }
 
     async withStyle(style, callback) {
-        const { kit, current } = vault.get(this);
-        let c = { ...current[0].inherit };
+        const { kit, styles } = vault.get(this);
+        const from = styles[styles.length-1];
+        const to = {};
 
-        if (style.fontSize != null) { c.fontSize = style.fontSize; }
-        if (style.fontFamily != null) { c.fontFamily = style.fontFamily; }
-        if (style.color != null) { c.fillColor = style.color; }
-        if (style.colorOpacity != null) { c.colorOpacity = style.colorOpacity; }
+        for (let i in style) { to[i] = style[i] != null ? style[i] : from[i]; }
 
-        current.unshift({style, inherit:c});
+        styles.push(to);
+
         
-        kit.font(c.fontFamily, c.fontSize).fillColor(c.fillColor, c.colorOpacity);
+        kit.font(to.fontFamily, to.fontSize).fillColor(to.color, to.colorOpacity);
         const result = await callback(this);
 
-        current.shift();
+        styles.pop();
 
-        c = current[0]?.inherit;
-        kit.font(c.fontFamily, c.fontSize).fillColor(c.fillColor, c.colorOpacity);
-
+        kit.font(from.fontFamily, from.fontSize).fillColor(from.color, from.colorOpacity);
         return result;
     }
 

@@ -13,7 +13,7 @@ const getCdr = (node, childIndex)=>[ getRid(node, childIndex), getCid(node, chil
 export const defaultStyle = {
     columns:"min",
     rows:"min",
-    border:"1 black"
+    border:"1 black",
 };
 
 export const validate = node=>{
