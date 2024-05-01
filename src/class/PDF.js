@@ -1,4 +1,5 @@
 import jet from "@randajan/jet-core";
+import { each } from "@randajan/jet-core/eachSync";
 import PDFKit from "pdfkit";
 
 import { minZeroNumber, vault } from "../helpers";
@@ -55,7 +56,7 @@ export class PDF {
             })
         }, false);
 
-        jet.forEach(options.fonts, (path, key)=>kit.registerFont(key, path));
+        each(options.fonts, (path, key)=>kit.registerFont(key, path));
     }
 
     msg(text) {

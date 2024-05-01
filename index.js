@@ -1,7 +1,7 @@
-import slib from "@randajan/simple-lib";
+import slib, { argv } from "@randajan/simple-lib";
 import ImportGlobPlugin from 'esbuild-plugin-import-glob';
 
-slib(process.env.NODE_ENV==="prod", {
+slib(argv.isBuild, {
     port:4002,
     mode:"node",
     minify:false,

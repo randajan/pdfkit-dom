@@ -8,8 +8,7 @@
             "type": "shell",
             "command": "npm publish --access=public",
             "dependsOn": [
-                "yarn build",
-                "GIT push"
+                "Rise Version"
             ],
             "group": {
                 "kind": "build",
@@ -17,20 +16,7 @@
             }
         },
         {
-            "label": "yarn build",
-            "type": "shell",
-            "command": "yarn build",
-        },
-        {
-            "label": "GIT push",
-            "type": "shell",
-            "command": "git add .; git commit -m 'Rise version'; git push -u origin main",
-            "dependsOn": [
-                "Rise version"
-            ]
-        },
-        {
-            "label": "Rise version",
+            "label": "Rise Version",
             "type": "shell",
             "command": "npm version ${input:npmVersion}",
             "dependsOn": [
@@ -40,7 +26,15 @@
         {
             "label": "GIT commit",
             "type": "shell",
-            "command": "git add .; git commit -m '${input:commit}'",
+            "command": "git add .; git commit -m '${input:commit}'; git push -u origin main",
+            "dependsOn": [
+                "Build package"
+            ]
+        },
+        {
+            "label": "Build package",
+            "type": "shell",
+            "command": "node index isBuild=true",
         }
     ],
     "inputs": [
@@ -52,7 +46,7 @@
         },
         {
             "id": "npmVersion",
-            "description": "Package version:",
+            "description": "Npm Version:",
             "default": "patch",
             "type": "pickString",
             "options": [

@@ -1,10 +1,12 @@
 import jet from "@randajan/jet-core";
+import { map } from "@randajan/jet-core/eachSync";
+
 import { notNullNumber, notNullMinZeroNumber, notNullString, minZeroNumber, enumFactory, minNumber, typize, notNullBoolean, notNull } from "../helpers";
 import { createSugarParser, createValidator } from "./parserFactory";
 
 const { solid } = jet.prop;
 
-const parsers = jet.map({
+const parsers = map({
     size: {
         sugar: ["", "min", "max"],
         sugarNS: ["width", "height"],
@@ -98,9 +100,9 @@ const parsers = jet.map({
             ["borderColumn", "borderVertical", "borderInner", "border"],
         ]
     },
-}, (v, n) => {
+}, (v, ctx) => {
     v.sugar = createSugarParser(v.sugar);
-    if (!v.sugarNS) { v.sugarNS = [n]; }
+    if (!v.sugarNS) { v.sugarNS = [ctx.key]; }
     v.validator = createValidator(v.validator);
     if (!v.validatorNS) { v.validatorNS = v.sugarNS; }
     return v;

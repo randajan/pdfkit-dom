@@ -9,7 +9,7 @@ const Lorem = props=>{
 
     return (
         <div style={{ border:"1 green", align:"center middle", width:"max", height:"max" }}>
-            <div style={{ border:"1 red", align:"center" }}>{loremIpsum({ count:words, units:"words" })}</div>
+            <div style={{ border:"1 yellow", align:"center" }}>{loremIpsum({ count:words, units:"words" })}</div>
         </div>
     );
 }

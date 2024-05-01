@@ -25,7 +25,7 @@ export const minZeroNumber = (...src)=>Math.max(0, Number.jet.to(notNull(...src)
 
 export const sum = (...nums)=>nums.reduce((r, n)=>r+n, 0);
 
-export const enumFactory = (enums, after)=>jet.enumFactory(enums, { before:src=>String.jet.to(src).jet.simplify(), after });
+export const enumFactory = (enums, after)=>jet.enumFactory(enums, { before:src=>String.jet.simplify(String.jet.to(src)), after });
 
 export const camelCase = (...strs)=>{
     let str = "";
