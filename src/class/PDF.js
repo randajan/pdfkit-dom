@@ -56,7 +56,7 @@ export class PDF {
             })
         }, false);
 
-        each(options.fonts, (path, key)=>kit.registerFont(key, path));
+        each(options.fonts, (path, ctx)=>kit.registerFont(ctx.key, path));
     }
 
     msg(text) {
