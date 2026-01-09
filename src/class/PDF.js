@@ -14,7 +14,7 @@ const { solid, virtual, safe } = jet.prop;
 export class PDF {
 
     static create(options) {
-        return new PDF({...options});
+        return new PDF({ ...options });
     }
 
     static createElement = PDFElement.create;
@@ -27,11 +27,11 @@ export class PDF {
             size: 'A4',
             ...options,
             bufferPages: true,
-            margins:{
-                left:0,
-                right:0,
-                top:0,
-                bottom:0
+            margins: {
+                left: 0,
+                right: 0,
+                top: 0,
+                bottom: 0
             }
         };
 
@@ -39,24 +39,24 @@ export class PDF {
         const _p = {
             kit,
             options,
-            state:"init", //init, rendering, done
-            styles:[{
-                fontSize:12,
-                fontFamily:"Courier",
-                foreground:"#000000"
+            state: "init", //init, rendering, done
+            styles: [{
+                fontSize: 12,
+                fontFamily: "Courier",
+                foreground: "#000000"
             }],
         }
         vault.set(this, _p);
 
         solid.all(this, {
             kit,
-            page:virtual.all({}, {
-                width:_=>minZeroNumber(kit.page.width),
-                height:_=>minZeroNumber(kit.page.height),
+            page: virtual.all({}, {
+                width: _ => minZeroNumber(kit.page.width),
+                height: _ => minZeroNumber(kit.page.height),
             })
         }, false);
 
-        each(options.fonts, (path, ctx)=>kit.registerFont(ctx.key, path));
+        each(options.fonts, (path, ctx) => kit.registerFont(ctx.key, path));
     }
 
     msg(text) {
@@ -65,14 +65,14 @@ export class PDF {
 
     async withStyle(style, callback) {
         const { kit, styles } = vault.get(this);
-        const from = styles[styles.length-1];
+        const from = styles[styles.length - 1];
         const to = {};
 
         for (let i in style) { to[i] = style[i] != null ? style[i] : from[i]; }
 
         styles.push(to);
 
-        
+
         kit.font(to.fontFamily, to.fontSize).fillColor(to.color, to.colorOpacity);
         const result = await callback(this);
 
@@ -100,14 +100,18 @@ export class PDF {
         await node.setHeight(height);
         await node.render(0, 0);
 
-        const prom = new Promise((res, rej)=>{
-            _p.kit.on("finish", _=>{
-                _p.state = "done";
-                res();
-            })
-            _p.kit.on("error", e=>{
-                rej(e);
-            });
+        const prom = new Promise((_res, rej) => {
+            const res = _ => { _p.state = "done"; _res(); }
+
+            if (pipeDestination) {
+                pipeDestination.once("finish", res);
+                pipeDestination.once("error", rej);
+            }
+            else {
+                _p.kit.once("end", res);
+                _p.kit.once("error", rej);
+            }
+            
         });
 
         _p.kit.end();
